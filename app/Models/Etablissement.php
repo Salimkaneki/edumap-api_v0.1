@@ -11,21 +11,93 @@ class Etablissement extends Model
     use HasFactory;
 
     protected $fillable = [
-        'code_etablissement', 'nom_etablissement', 'region', 'prefecture', 
-        'canton_village_autonome', 'ville_village_quartier', 'libelle_type_milieu', 
-        'libelle_type_statut_etab', 'libelle_type_systeme', 'existe_elect', 
-        'existe_latrine', 'existe_latrine_fonct', 'acces_toute_saison', 'eau', 
-        'latitude', 'longitude', 'sommedenb_eff_g', 'sommedenb_eff_f', 'tot', 
-        'sommedenb_ens_h', 'sommedenb_ens_f', 'total_ense', 
-        'sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 
-        'sommedenb_salles_classes_autre', 'libelle_type_annee', 'commune_etab'
+        'code_etablissement',
+        'nom_etablissement',
+        'latitude',
+        'longitude',
+        'localisation_id',
+        'milieu_id',
+        'statut_id',
+        'systeme_id',
+        'annee_id',
+
     ];
 
     protected $casts = [
-        'existe_elect' => 'boolean',
-        'existe_latrine' => 'boolean',
-        'existe_latrine_fonct' => 'boolean',
-        'acces_toute_saison' => 'boolean',
-        'eau' => 'boolean',
+    	'latitude' => 'decimal:8',
+	'longitude' => 'decimal:8'
     ];
+
+    // Relations belongsTo
+    public function localisation()
+    {
+        return $this->belongsTo(Localisation::class);
+    }
+
+    public function milieu()
+    {
+        return $this->belongsTo(Milieu::class);
+    }
+
+    public function statut()
+    {
+        return $this->belongsTo(Statut::class);
+    }
+
+    public function systeme()
+    {
+        return $this->belongsTo(Systeme::class);
+    }
+
+    public function annee()
+    {
+        return $this->belongsTo(Annee::class);
+    }
+
+    // Relations hasOne
+    public function equipement()
+    {
+        return $this->hasOne(EquipementEtablissement::class);
+    }
+
+    public function effectif()
+    {
+        return $this->hasOne(Effectif::class);
+    }
+
+    public function infrastructure()
+    {
+        return $this->hasOne(Infrastructure::class);
+    }
+
+    // Accessors pour faciliter l'accès aux données
+    public function getRegionAttribute()
+    {
+        return $this->localisation?->region;
+    }
+
+    public function getPrefectureAttribute()
+    {
+        return $this->localisation?->prefecture;
+    }
+
+    public function getLibelleTypeMilieuAttribute()
+    {
+        return $this->milieu?->libelle_type_milieu;
+    }
+
+    public function getLibelleTypeStatutEtabAttribute()
+    {
+        return $this->statut?->libelle_type_statut_etab;
+    }
+
+    public function getLibelleTypeSystemeAttribute()
+    {
+        return $this->systeme?->libelle_type_systeme;
+    }
+
+    public function getLibelleTypeAnneeAttribute()
+    {
+        return $this->annee?->libelle_type_annee;
+    }
 }

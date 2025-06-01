@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('code_etablissement');
             $table->string('nom_etablissement');
+             $table->string('latitude', 10, 8)->nullable();
+             $table->string('longitude', 11, 8)->nullable();
 
             $table->foreignId('localisation_id')->constrained('localisations')->onDelete;
             $table->foreignId('milieu_id')->constrained('milieux')->onDelete('cascade');

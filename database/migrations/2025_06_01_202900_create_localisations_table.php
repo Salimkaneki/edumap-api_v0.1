@@ -18,8 +18,6 @@ return new class extends Migration
             $table->string('canton_village_autonome');
             $table->string('ville_village_quartier');
             $table->string('commune_etab')->nullable();
-            $table->string('latitude', 10, 8)->nullable();
-            $table->string('longitude', 11, 8)->nullable();
             $table->timestamps();
         });
     }
