@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('annees', function (Blueprint $table) {
             $table->id();
-            $table->string('libelle_type_anne')->unique()->nullable();
+            $table->string('libelle_type_annee')->unique()->nullable();
             $table->timestamps();
         });
     }

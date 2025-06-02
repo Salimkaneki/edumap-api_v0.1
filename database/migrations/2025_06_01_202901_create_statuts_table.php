@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('statuts', function (Blueprint $table) {
             $table->id();
-            $table->string('libelle_type_status_etab')->unique();
+            $table->string('libelle_type_statut_etab')->unique();
             $table->timestamps();
         });
     }

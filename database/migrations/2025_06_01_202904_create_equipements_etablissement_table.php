@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('equipements_etablissement', function (Blueprint $table) {
             $table->id();
             $table->foreignId('etablissement_id')->constrained('etablissements')->onDelete('cascade');
-            $table->boolean('existe_elect')->default('false');
-            $table->boolean('existe_latrine')->default('false');
-            $table->boolean('existe_latrine_fonct')->default('false');
-            $table->boolean('acces_toute_saison')->default('false');
-            $table->boolean('eau')->default('false');
+            $table->boolean('existe_elect')->default(false);
+            $table->boolean('existe_latrine')->default(false);
+            $table->boolean('existe_latrine_fonct')->default(false);
+            $table->boolean('acces_toute_saison')->default(false);
+            $table->boolean('eau')->default(false);
             $table->timestamps();
         });
     }
