@@ -13,6 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         //
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
+            // 'sanctum_api' => \App\Http\Middleware\SanctumApiMiddleware::class,
+
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

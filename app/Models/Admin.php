@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens; // ✅ Import manquant ajouté
 
-class Admin extends Model
+class Admin extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
@@ -21,17 +24,17 @@ class Admin extends Model
     ];
 
     protected $casts = [
+        'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
 
-    public function isSuperAdmin()
+    public function isSuperAdmin(): bool
     {
         return $this->role === 'superadmin';
     }
 
-    public function isAdmin()
+    public function isAdmin(): bool
     {
-        return in_array($this->role, ['admin', 'superadmin']);
+        return $this->role === 'admin';
     }
 }
-
