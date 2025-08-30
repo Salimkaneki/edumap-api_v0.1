@@ -1,0 +1,124 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PublicEtablissementController;
+use App\Http\Controllers\AdminEtablissementController;
+use App\Http\Controllers\AdminAuthController;
+
+// Route utilisateur standard
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+
+// ========================================
+// ROUTES PUBLIQUES - ÉTABLISSEMENTS
+// ========================================
+Route::prefix('etablissements')->group(function () {
+    Route::get('/', [PublicEtablissementController::class, 'index']);
+    Route::get('/search', [PublicEtablissementController::class, 'search']);
+    Route::get('/map', [PublicEtablissementController::class, 'map']);
+    Route::get('/stats', [PublicEtablissementController::class, 'stats']);
+    Route::get('/filter-options', [PublicEtablissementController::class, 'filterOptions']);
+    Route::get('/{id}', [PublicEtablissementController::class, 'show']);
+});
+
+// ========================================
+// ROUTES ADMIN
+// ========================================
+Route::prefix('admin')->group(function () {
+    
+    // Route publique de connexion admin
+    Route::post('/login', [AdminAuthController::class, 'login']);
+    
+    // Routes protégées admin
+    Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+        
+        // ========================================
+        // ROUTES D'AUTHENTIFICATION ADMIN
+        // ========================================
+        Route::get('/me', [AdminAuthController::class, 'me']);
+        Route::post('/logout', [AdminAuthController::class, 'logout']);
+        Route::get('/dashboard', [AdminAuthController::class, 'dashboard']);
+        
+        // ========================================
+        // ROUTES ÉTABLISSEMENTS ADMIN
+        // ========================================
+        Route::prefix('etablissements')->group(function () {
+            // Consultation
+            Route::get('/', [AdminEtablissementController::class, 'index']);
+            Route::get('/search', [AdminEtablissementController::class, 'search']);
+            Route::get('/map', [AdminEtablissementController::class, 'map']);
+            Route::get('/stats', [AdminEtablissementController::class, 'stats']);
+            Route::get('/filter-options', [AdminEtablissementController::class, 'filterOptions']);
+            Route::get('/export', [AdminEtablissementController::class, 'export']);
+            Route::get('/{id}', [AdminEtablissementController::class, 'show']);
+            Route::get('/{id}/history', [AdminEtablissementController::class, 'history']);
+            
+            // Création et modification (admin et superadmin)
+            Route::post('/', [AdminEtablissementController::class, 'store']);
+            Route::put('/{id}', [AdminEtablissementController::class, 'update']);
+            Route::patch('/{id}', [AdminEtablissementController::class, 'update']);
+        });
+        
+        // ========================================
+        // ROUTES SUPERADMIN UNIQUEMENT
+        // ========================================
+        Route::middleware('superadmin')->group(function () {
+            // Gestion des administrateurs
+            Route::get('/admins', [AdminAuthController::class, 'admins']);
+            Route::post('/admins', [AdminAuthController::class, 'createAdmin']);
+            Route::put('/admins/{id}', [AdminAuthController::class, 'updateAdmin']);
+            Route::delete('/admins/{id}', [AdminAuthController::class, 'deleteAdmin']);
+            
+            // Suppression d'établissements (superadmin uniquement)
+            Route::delete('/etablissements/{id}', [AdminEtablissementController::class, 'destroy']);
+            
+            // Statistiques avancées
+            Route::get('/stats/advanced', [AdminAuthController::class, 'advancedStats']);
+            
+            // Gestion du système
+            Route::get('/system/info', [AdminAuthController::class, 'systemInfo']);
+            Route::post('/system/cache/clear', [AdminAuthController::class, 'clearCache']);
+        });
+    });
+});
+
+// ========================================
+// ROUTES ALTERNATIVES (pour compatibilité)
+// ========================================
+// Ces routes peuvent être utilisées si vous voulez garder l'ancienne structure
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::post('/etablissements', [AdminEtablissementController::class, 'store']);
+    Route::put('/etablissements/{id}', [AdminEtablissementController::class, 'update']);
+    Route::patch('/etablissements/{id}', [AdminEtablissementController::class, 'update']);
+});
+
+// Suppression réservée aux superadmins (route alternative)
+Route::middleware(['auth:sanctum', 'admin', 'superadmin'])->group(function () {
+    Route::delete('/etablissements/{id}', [AdminEtablissementController::class, 'destroy']);
+});
+
+// ========================================
+// ROUTES DE DÉVELOPPEMENT (à supprimer en production)
+// ========================================
+if (app()->environment('local', 'testing')) {
+    Route::prefix('dev')->group(function () {
+        Route::get('/routes', function () {
+            return collect(Route::getRoutes())->map(function ($route) {
+                return [
+                    'method' => implode('|', $route->methods()),
+                    'uri' => $route->uri(),
+                    'name' => $route->getName(),
+                    'action' => $route->getActionName(),
+                    'middleware' => $route->middleware(),
+                ];
+            });
+        });
+        
+        Route::get('/cache/clear', function () {
+            \Illuminate\Support\Facades\Cache::flush();
+            return response()->json(['message' => 'Cache cleared']);
+        });
+    });
+}

@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('code_etablissement');
             $table->string('nom_etablissement');
-             $table->string('latitude', 10, 8)->nullable();
-             $table->string('longitude', 11, 8)->nullable();
+            $table->string('latitude', 10, 8)->nullable();
+            $table->string('longitude', 11, 8)->nullable();
 
-            $table->foreignId('localisation_id')->constrained('localisations')->onDelete;
+            // Add ->nullable() to localisation_id since you're using onDelete('set null')
+            $table->foreignId('localisation_id')->nullable()->constrained('localisations')->onDelete('set null');
             $table->foreignId('milieu_id')->constrained('milieux')->onDelete('cascade');
             $table->foreignId('statut_id')->constrained('statuts')->onDelete('cascade');
             $table->foreignId('systeme_id')->constrained('systemes')->onDelete('cascade');
