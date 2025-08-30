@@ -1,0 +1,656 @@
+{
+	"info": {
+		"_postman_id": "edumap-api-v1",
+		"name": "EduMap API v1.0 - Collection Complète",
+		"description": "Collection Postman pour tester l'API EduMap - Gestion des établissements scolaires du Togo\n\n**Fonctionnalités:**\n- API publique (consultation sans auth)\n- API admin (gestion avec auth)\n- 15 216 établissements\n- Recherche géographique\n- Filtres avancés",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🌍 API Publique (Non-Auth)",
+			"item": [
+				{
+					"name": "📋 Liste des établissements",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/etablissements?page=1&per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Numéro de page"
+								},
+								{
+									"key": "per_page",
+									"value": "20",
+									"description": "Éléments par page (max: 100)"
+								}
+							]
+						},
+						"description": "Récupère la liste paginée de tous les établissements scolaires"
+					}
+				},
+				{
+					"name": "🔍 Détails d'un établissement",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/etablissements/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements", "1"]
+						},
+						"description": "Récupère les détails complets d'un établissement spécifique"
+					}
+				},
+				{
+					"name": "🔎 Recherche par nom",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/etablissements/search?nom_etablissement=École",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements", "search"],
+							"query": [
+								{
+									"key": "nom_etablissement",
+									"value": "École",
+									"description": "Recherche par nom d'établissement"
+								}
+							]
+						},
+						"description": "Recherche des établissements par nom"
+					}
+				},
+				{
+					"name": "🌍 Recherche par région",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/etablissements/search?region=Maritime&prefecture=Golfe",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements", "search"],
+							"query": [
+								{
+									"key": "region",
+									"value": "Maritime",
+									"description": "Filtrer par région"
+								},
+								{
+									"key": "prefecture",
+									"value": "Golfe",
+									"description": "Filtrer par préfecture"
+								}
+							]
+						},
+						"description": "Recherche par localisation géographique"
+					}
+				},
+				{
+					"name": "🏫 Recherche par statut et milieu",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/etablissements/search?libelle_type_statut_etab=Public&libelle_type_milieu=Urbain",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements", "search"],
+							"query": [
+								{
+									"key": "libelle_type_statut_etab",
+									"value": "Public",
+									"description": "Public, Privé laïc, Privé confessionnel"
+								},
+								{
+									"key": "libelle_type_milieu",
+									"value": "Urbain",
+									"description": "Rural ou Urbain"
+								}
+							]
+						},
+						"description": "Filtrage par type d'établissement"
+					}
+				},
+				{
+					"name": "⚡ Recherche par infrastructures",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/etablissements/search?existe_elect=true&eau=true&existe_latrine=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements", "search"],
+							"query": [
+								{
+									"key": "existe_elect",
+									"value": "true",
+									"description": "Établissements avec électricité"
+								},
+								{
+									"key": "eau",
+									"value": "true",
+									"description": "Établissements avec eau potable"
+								},
+								{
+									"key": "existe_latrine",
+									"value": "true",
+									"description": "Établissements avec latrines"
+								}
+							]
+						},
+						"description": "Recherche par équipements et infrastructures"
+					}
+				},
+				{
+					"name": "🗺️ Données pour carte",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/etablissements/map",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements", "map"]
+						},
+						"description": "Récupère tous les établissements avec coordonnées GPS pour affichage sur carte"
+					}
+				},
+				{
+					"name": "📍 Établissements à proximité",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"lat\": 6.1319,\n    \"lng\": 1.2228,\n    \"radius\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/etablissements/nearby",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements", "nearby"]
+						},
+						"description": "Trouve les établissements dans un rayon donné (en km) autour d'un point GPS"
+					}
+				},
+				{
+					"name": "📊 Statistiques publiques",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/etablissements/stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements", "stats"]
+						},
+						"description": "Statistiques générales : totaux par région, statut, infrastructures"
+					}
+				},
+				{
+					"name": "🎛️ Options de filtrage",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/etablissements/filter-options",
+							"host": ["{{base_url}}"],
+							"path": ["api", "etablissements", "filter-options"]
+						},
+						"description": "Récupère toutes les options disponibles pour les filtres (régions, statuts, etc.)"
+					}
+				}
+			],
+			"description": "Endpoints publics accessibles sans authentification pour la consultation des données"
+		},
+		{
+			"name": "🔐 Authentification Admin",
+			"item": [
+				{
+					"name": "🔑 Connexion Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.token) {",
+									"        pm.environment.set('admin_token', response.token);",
+									"        console.log('Token admin sauvegardé:', response.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@edumap.tg\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "login"]
+						},
+						"description": "Connexion administrateur - sauvegarde automatiquement le token"
+					}
+				},
+				{
+					"name": "👤 Profil Admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/me",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "me"]
+						},
+						"description": "Récupère les informations du profil admin connecté"
+					}
+				},
+				{
+					"name": "📊 Dashboard Admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "dashboard"]
+						},
+						"description": "Données du tableau de bord administrateur"
+					}
+				},
+				{
+					"name": "🚪 Déconnexion Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "logout"]
+						},
+						"description": "Déconnexion et invalidation du token"
+					}
+				}
+			],
+			"description": "Gestion de l'authentification des administrateurs"
+		},
+		{
+			"name": "🏫 Gestion Admin - Établissements",
+			"item": [
+				{
+					"name": "📋 Liste Admin (avec relations)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/etablissements?page=1&per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "etablissements"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Liste admin avec toutes les relations chargées"
+					}
+				},
+				{
+					"name": "🔍 Détails Admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/etablissements/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "etablissements", "1"]
+						},
+						"description": "Détails complets d'un établissement (vue admin)"
+					}
+				},
+				{
+					"name": "➕ Créer un établissement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code_etablissement\": \"ETB001_TEST\",\n    \"nom_etablissement\": \"École Primaire de Test API\",\n    \"latitude\": 6.1319,\n    \"longitude\": 1.2228,\n    \"region\": \"Maritime\",\n    \"prefecture\": \"Golfe\",\n    \"canton_village_autonome\": \"Test Village\",\n    \"ville_village_quartier\": \"Test Quartier\",\n    \"commune_etab\": \"Test Commune\",\n    \"libelle_type_milieu\": \"Urbain\",\n    \"libelle_type_statut_etab\": \"Public\",\n    \"libelle_type_systeme\": \"PRIMAIRE\",\n    \"libelle_type_annee\": \"2023-2024\",\n    \"existe_elect\": true,\n    \"existe_latrine\": true,\n    \"existe_latrine_fonct\": true,\n    \"acces_toute_saison\": true,\n    \"eau\": true,\n    \"sommedenb_eff_g\": 120,\n    \"sommedenb_eff_f\": 110,\n    \"tot\": 230,\n    \"sommedenb_ens_h\": 5,\n    \"sommedenb_ens_f\": 8,\n    \"total_ense\": 13,\n    \"sommedenb_salles_classes_dur\": 6,\n    \"sommedenb_salles_classes_banco\": 2,\n    \"sommedenb_salles_classes_autre\": 0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/etablissements",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "etablissements"]
+						},
+						"description": "Créer un nouvel établissement avec toutes les données"
+					}
+				},
+				{
+					"name": "✏️ Modifier un établissement",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom_etablissement\": \"École Primaire de Test API - Modifiée\",\n    \"existe_elect\": false,\n    \"eau\": false,\n    \"sommedenb_eff_g\": 125,\n    \"sommedenb_eff_f\": 115\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/etablissements/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "etablissements", "1"]
+						},
+						"description": "Modification partielle d'un établissement"
+					}
+				},
+				{
+					"name": "📤 Import Excel",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "Base_2024.xlsx",
+									"description": "Fichier Excel des établissements"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/etablissements/import",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "etablissements", "import"]
+						},
+						"description": "Import en masse des données Excel (15 216 établissements)"
+					}
+				},
+				{
+					"name": "📊 Statistiques Admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/etablissements/stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "etablissements", "stats"]
+						},
+						"description": "Statistiques détaillées pour les administrateurs"
+					}
+				},
+				{
+					"name": "🔎 Recherche Admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/etablissements/search?region=Maritime",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "etablissements", "search"],
+							"query": [
+								{
+									"key": "region",
+									"value": "Maritime"
+								}
+							]
+						},
+						"description": "Recherche avancée côté admin"
+					}
+				}
+			],
+			"description": "Gestion complète des établissements côté administrateur"
+		},
+		{
+			"name": "👑 SuperAdmin Uniquement",
+			"item": [
+				{
+					"name": "🗑️ Supprimer un établissement",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/etablissements/999",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "etablissements", "999"]
+						},
+						"description": "⚠️ Suppression définitive (SuperAdmin uniquement)"
+					}
+				},
+				{
+					"name": "👥 Liste des admins",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/admins",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "admins"]
+						},
+						"description": "Liste de tous les administrateurs (SuperAdmin uniquement)"
+					}
+				},
+				{
+					"name": "➕ Créer un admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nouvel Admin\",\n    \"email\": \"nouvel.admin@edumap.tg\",\n    \"password\": \"password123\",\n    \"role\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/admins",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "admins"]
+						},
+						"description": "Créer un nouvel administrateur (SuperAdmin uniquement)"
+					}
+				}
+			],
+			"description": "Fonctionnalités réservées aux Super-Administrateurs"
+		},
+		{
+			"name": "🔧 Maintenance & Info",
+			"item": [
+				{
+					"name": "❤️ Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/health",
+							"host": ["{{base_url}}"],
+							"path": ["api", "health"]
+						},
+						"description": "Vérification du statut de l'API"
+					}
+				},
+				{
+					"name": "ℹ️ Informations API",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/info",
+							"host": ["{{base_url}}"],
+							"path": ["api", "info"]
+						},
+						"description": "Informations générales sur l'API et liste des endpoints"
+					}
+				}
+			],
+			"description": "Endpoints utilitaires pour le monitoring et l'information"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script exécuté avant chaque requête",
+					"console.log('🚀 Exécution de la requête:', pm.request.name);"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Tests globaux après chaque requête",
+					"pm.test('Status code is not 500', function () {",
+					"    pm.expect(pm.response.code).to.not.equal(500);",
+					"});",
+					"",
+					"if (pm.response.headers.get('Content-Type') && pm.response.headers.get('Content-Type').includes('application/json')) {",
+					"    pm.test('Response is JSON', function () {",
+					"        pm.response.to.be.json;",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"description": "URL de base de votre API Laravel"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"description": "Token d'authentification admin (auto-rempli par login)"
+		}
+	]
+}

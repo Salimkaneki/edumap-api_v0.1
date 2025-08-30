@@ -23,7 +23,7 @@ config = {
     'user': 'root',
     'password': '',
     'host': '127.0.0.1',
-    'database': 'edumap_api_v01',
+    'database': 'edumap_backend',
     'raise_on_warnings': True
 }
 
@@ -534,7 +534,7 @@ def test_database_connection():
 
 def main():
     # Chemin du fichier Excel
-    fichier_excel = 'C:/Users/_Salim_mevtr_/project-lab/edumap-api_v0.1/etl/Base_2024.xlsx'
+    fichier_excel = './Base_2024.xlsx'
     
     # Test de la connexion à la base de données
     logging.info("Test de la connexion à la base de données...")

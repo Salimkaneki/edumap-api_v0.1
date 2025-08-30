@@ -20,12 +20,11 @@ class Etablissement extends Model
         'statut_id',
         'systeme_id',
         'annee_id',
-
     ];
 
     protected $casts = [
-    	'latitude' => 'decimal:8',
-	'longitude' => 'decimal:8'
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8'
     ];
 
     // Relations belongsTo
@@ -70,6 +69,36 @@ class Etablissement extends Model
         return $this->hasOne(Infrastructure::class);
     }
 
+    // Scopes pour faciliter les recherches
+    public function scopeNearby($query, $latitude, $longitude, $radius = 10)
+    {
+        return $query->selectRaw("*, (
+            6371 * acos(
+                cos(radians(?)) * 
+                cos(radians(latitude)) * 
+                cos(radians(longitude) - radians(?)) + 
+                sin(radians(?)) * 
+                sin(radians(latitude))
+            )
+        ) AS distance", [$latitude, $longitude, $latitude])
+        ->having('distance', '<', $radius)
+        ->orderBy('distance');
+    }
+
+    public function scopeByRegion($query, $region)
+    {
+        return $query->whereHas('localisation', function($q) use ($region) {
+            $q->where('region', $region);
+        });
+    }
+
+    public function scopeByStatut($query, $statut)
+    {
+        return $query->whereHas('statut', function($q) use ($statut) {
+            $q->where('libelle_type_statut_etab', $statut);
+        });
+    }
+
     // Accessors pour faciliter l'accès aux données
     public function getRegionAttribute()
     {
@@ -99,5 +128,23 @@ class Etablissement extends Model
     public function getLibelleTypeAnneeAttribute()
     {
         return $this->annee?->libelle_type_annee;
+    }
+
+    // Méthode pour obtenir toutes les données complètes
+    public function getFullDataAttribute()
+    {
+        return [
+            'etablissement' => $this->only(['id', 'code_etablissement', 'nom_etablissement', 'latitude', 'longitude']),
+            'localisation' => $this->localisation,
+            'caracteristiques' => [
+                'milieu' => $this->milieu,
+                'statut' => $this->statut,
+                'systeme' => $this->systeme,
+                'annee' => $this->annee,
+            ],
+            'effectifs' => $this->effectif,
+            'infrastructures' => $this->infrastructure,
+            'equipements' => $this->equipement,
+        ];
     }
 }

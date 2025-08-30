@@ -8,6 +8,7 @@ use App\Models\Etablissement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PublicEtablissementController extends Controller
 {
@@ -23,14 +24,7 @@ class PublicEtablissementController extends Controller
             $cacheKey = 'public_etablissements_page_' . $page . '_per_page_' . $perPage;
             
             $etablissements = Cache::remember($cacheKey, 300, function () use ($perPage) {
-                return Etablissement::with(['milieu', 'statut', 'systeme', 'annee'])
-                    ->select([
-                        'id', 'code_etablissement', 'nom_etablissement', 'region', 'prefecture',
-                        'canton_village_autonome', 'ville_village_quartier', 'commune_etab',
-                        'libelle_type_milieu', 'libelle_type_statut_etab', 'libelle_type_systeme',
-                        'libelle_type_annee', 'latitude', 'longitude', 'tot', 'total_ense',
-                        'existe_elect', 'existe_latrine', 'existe_latrine_fonct', 'acces_toute_saison', 'eau'
-                    ])
+                return Etablissement::with(['localisation', 'milieu', 'statut', 'systeme', 'annee', 'effectif', 'infrastructure', 'equipement'])
                     ->paginate($perPage);
             });
 
@@ -57,14 +51,7 @@ class PublicEtablissementController extends Controller
             $cacheKey = 'public_etablissement_' . $id;
             
             $etablissement = Cache::remember($cacheKey, 300, function () use ($id) {
-                return Etablissement::with(['milieu', 'statut', 'systeme', 'annee'])
-                    ->select([
-                        'id', 'code_etablissement', 'nom_etablissement', 'region', 'prefecture',
-                        'canton_village_autonome', 'ville_village_quartier', 'commune_etab',
-                        'libelle_type_milieu', 'libelle_type_statut_etab', 'libelle_type_systeme',
-                        'libelle_type_annee', 'latitude', 'longitude', 'tot', 'total_ense',
-                        'existe_elect', 'existe_latrine', 'existe_latrine_fonct', 'acces_toute_saison', 'eau'
-                    ])
+                return Etablissement::with(['localisation', 'milieu', 'statut', 'systeme', 'annee', 'effectif', 'infrastructure', 'equipement'])
                     ->find($id);
             });
             
@@ -94,14 +81,7 @@ class PublicEtablissementController extends Controller
         try {
             Log::info('Recherche publique avec params:', $request->all());
 
-            $query = Etablissement::with(['milieu', 'statut', 'systeme', 'annee'])
-                ->select([
-                    'id', 'code_etablissement', 'nom_etablissement', 'region', 'prefecture',
-                    'canton_village_autonome', 'ville_village_quartier', 'commune_etab',
-                    'libelle_type_milieu', 'libelle_type_statut_etab', 'libelle_type_systeme',
-                    'libelle_type_annee', 'latitude', 'longitude', 'tot', 'total_ense',
-                    'existe_elect', 'existe_latrine', 'existe_latrine_fonct', 'acces_toute_saison', 'eau'
-                ]);
+            $query = Etablissement::with(['localisation', 'milieu', 'statut', 'systeme', 'annee', 'effectif', 'infrastructure', 'equipement']);
 
             // Filtres de recherche
             if ($request->filled('nom_etablissement')) {
@@ -109,43 +89,63 @@ class PublicEtablissementController extends Controller
             }
 
             if ($request->filled('region')) {
-                $query->where('region', $request->region);
+                $query->whereHas('localisation', function($q) use ($request) {
+                    $q->where('region', $request->region);
+                });
             }
 
             if ($request->filled('prefecture')) {
-                $query->where('prefecture', $request->prefecture);
+                $query->whereHas('localisation', function($q) use ($request) {
+                    $q->where('prefecture', $request->prefecture);
+                });
             }
 
             if ($request->filled('libelle_type_milieu')) {
-                $query->where('libelle_type_milieu', $request->libelle_type_milieu);
+                $query->whereHas('milieu', function($q) use ($request) {
+                    $q->where('libelle_type_milieu', $request->libelle_type_milieu);
+                });
             }
 
             if ($request->filled('libelle_type_statut_etab')) {
-                $query->where('libelle_type_statut_etab', $request->libelle_type_statut_etab);
+                $query->whereHas('statut', function($q) use ($request) {
+                    $q->where('libelle_type_statut_etab', $request->libelle_type_statut_etab);
+                });
             }
 
             if ($request->filled('libelle_type_systeme')) {
-                $query->where('libelle_type_systeme', $request->libelle_type_systeme);
+                $query->whereHas('systeme', function($q) use ($request) {
+                    $q->where('libelle_type_systeme', $request->libelle_type_systeme);
+                });
             }
 
             if ($request->filled('existe_elect')) {
-                $query->where('existe_elect', filter_var($request->existe_elect, FILTER_VALIDATE_BOOLEAN));
+                $query->whereHas('equipement', function($q) use ($request) {
+                    $q->where('existe_elect', filter_var($request->existe_elect, FILTER_VALIDATE_BOOLEAN));
+                });
             }
 
             if ($request->filled('existe_latrine')) {
-                $query->where('existe_latrine', filter_var($request->existe_latrine, FILTER_VALIDATE_BOOLEAN));
+                $query->whereHas('equipement', function($q) use ($request) {
+                    $q->where('existe_latrine', filter_var($request->existe_latrine, FILTER_VALIDATE_BOOLEAN));
+                });
             }
 
             if ($request->filled('existe_latrine_fonct')) {
-                $query->where('existe_latrine_fonct', filter_var($request->existe_latrine_fonct, FILTER_VALIDATE_BOOLEAN));
+                $query->whereHas('equipement', function($q) use ($request) {
+                    $q->where('existe_latrine_fonct', filter_var($request->existe_latrine_fonct, FILTER_VALIDATE_BOOLEAN));
+                });
             }
 
             if ($request->filled('acces_toute_saison')) {
-                $query->where('acces_toute_saison', filter_var($request->acces_toute_saison, FILTER_VALIDATE_BOOLEAN));
+                $query->whereHas('equipement', function($q) use ($request) {
+                    $q->where('acces_toute_saison', filter_var($request->acces_toute_saison, FILTER_VALIDATE_BOOLEAN));
+                });
             }
 
             if ($request->filled('eau')) {
-                $query->where('eau', filter_var($request->eau, FILTER_VALIDATE_BOOLEAN));
+                $query->whereHas('equipement', function($q) use ($request) {
+                    $q->where('eau', filter_var($request->eau, FILTER_VALIDATE_BOOLEAN));
+                });
             }
 
             $perPage = min($request->per_page ?? 10, 50);
@@ -170,13 +170,12 @@ class PublicEtablissementController extends Controller
             $cacheKey = 'public_etablissements_map';
             
             $etablissements = Cache::remember($cacheKey, 600, function () {
-                return Etablissement::select([
-                    'id', 'nom_etablissement', 'latitude', 'longitude', 'region', 'prefecture',
-                    'libelle_type_milieu', 'libelle_type_statut_etab', 'libelle_type_systeme'
-                ])
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->get();
+                return Etablissement::with(['localisation', 'milieu', 'statut', 'systeme'])
+                    ->select('id', 'nom_etablissement', 'latitude', 'longitude', 'localisation_id', 'milieu_id', 'statut_id', 'systeme_id')
+                    ->whereNotNull('latitude')
+                    ->whereNotNull('longitude')
+                    ->limit(10) // Limite à 1000 établissements pour la carte
+                    ->get();
             });
 
             return response()->json($etablissements);
@@ -200,31 +199,39 @@ class PublicEtablissementController extends Controller
             $stats = Cache::remember($cacheKey, 3600, function () {
                 return [
                     'total_etablissements' => Etablissement::count(),
-                    'par_region' => Etablissement::select('region')
+                    'par_region' => DB::table('etablissements')
+                        ->join('localisations', 'etablissements.localisation_id', '=', 'localisations.id')
+                        ->select('localisations.region')
                         ->selectRaw('COUNT(*) as count')
-                        ->groupBy('region')
+                        ->groupBy('localisations.region')
                         ->orderBy('count', 'desc')
                         ->get(),
-                    'par_type_milieu' => Etablissement::select('libelle_type_milieu')
+                    'par_type_milieu' => DB::table('etablissements')
+                        ->join('milieux', 'etablissements.milieu_id', '=', 'milieux.id')
+                        ->select('milieux.libelle_type_milieu')
                         ->selectRaw('COUNT(*) as count')
-                        ->groupBy('libelle_type_milieu')
+                        ->groupBy('milieux.libelle_type_milieu')
                         ->get(),
-                    'par_statut' => Etablissement::select('libelle_type_statut_etab')
+                    'par_statut' => DB::table('etablissements')
+                        ->join('statuts', 'etablissements.statut_id', '=', 'statuts.id')
+                        ->select('statuts.libelle_type_statut_etab')
                         ->selectRaw('COUNT(*) as count')
-                        ->groupBy('libelle_type_statut_etab')
+                        ->groupBy('statuts.libelle_type_statut_etab')
                         ->get(),
-                    'par_systeme' => Etablissement::select('libelle_type_systeme')
+                    'par_systeme' => DB::table('etablissements')
+                        ->join('systemes', 'etablissements.systeme_id', '=', 'systemes.id')
+                        ->select('systemes.libelle_type_systeme')
                         ->selectRaw('COUNT(*) as count')
-                        ->groupBy('libelle_type_systeme')
+                        ->groupBy('systemes.libelle_type_systeme')
                         ->get(),
-                    'total_eleves' => Etablissement::sum('tot'),
-                    'total_enseignants' => Etablissement::sum('total_ense'),
+                    'total_eleves' => DB::table('effectifs')->sum('tot'),
+                    'total_enseignants' => DB::table('effectifs')->sum('total_ense'),
                     'infrastructures' => [
-                        'avec_electricite' => Etablissement::where('existe_elect', true)->count(),
-                        'avec_latrines' => Etablissement::where('existe_latrine', true)->count(),
-                        'avec_latrines_fonctionnelles' => Etablissement::where('existe_latrine_fonct', true)->count(),
-                        'avec_eau' => Etablissement::where('eau', true)->count(),
-                        'acces_toute_saison' => Etablissement::where('acces_toute_saison', true)->count(),
+                        'avec_electricite' => DB::table('equipements_etablissement')->where('existe_elect', true)->count(),
+                        'avec_latrines' => DB::table('equipements_etablissement')->where('existe_latrine', true)->count(),
+                        'avec_latrines_fonctionnelles' => DB::table('equipements_etablissement')->where('existe_latrine_fonct', true)->count(),
+                        'avec_eau' => DB::table('equipements_etablissement')->where('eau', true)->count(),
+                        'acces_toute_saison' => DB::table('equipements_etablissement')->where('acces_toute_saison', true)->count(),
                     ]
                 ];
             });
@@ -249,27 +256,27 @@ class PublicEtablissementController extends Controller
             
             $options = Cache::remember($cacheKey, 3600, function () {
                 return [
-                    'regions' => Etablissement::select('region')
+                    'regions' => DB::table('localisations')
                         ->distinct()
                         ->whereNotNull('region')
                         ->orderBy('region')
                         ->pluck('region'),
-                    'prefectures' => Etablissement::select('prefecture')
+                    'prefectures' => DB::table('localisations')
                         ->distinct()
                         ->whereNotNull('prefecture')
                         ->orderBy('prefecture')
                         ->pluck('prefecture'),
-                    'types_milieu' => Etablissement::select('libelle_type_milieu')
+                    'types_milieu' => DB::table('milieux')
                         ->distinct()
                         ->whereNotNull('libelle_type_milieu')
                         ->orderBy('libelle_type_milieu')
                         ->pluck('libelle_type_milieu'),
-                    'types_statut' => Etablissement::select('libelle_type_statut_etab')
+                    'types_statut' => DB::table('statuts')
                         ->distinct()
                         ->whereNotNull('libelle_type_statut_etab')
                         ->orderBy('libelle_type_statut_etab')
                         ->pluck('libelle_type_statut_etab'),
-                    'types_systeme' => Etablissement::select('libelle_type_systeme')
+                    'types_systeme' => DB::table('systemes')
                         ->distinct()
                         ->whereNotNull('libelle_type_systeme')
                         ->orderBy('libelle_type_systeme')
@@ -283,6 +290,64 @@ class PublicEtablissementController extends Controller
             
             return response()->json([
                 'error' => 'Une erreur est survenue lors de la récupération des options de filtrage'
+            ], 500);
+        }
+    }
+
+    /**
+     * Établissements à proximité d'un point
+     */
+    public function nearby(Request $request)
+    {
+        try {
+            $request->validate([
+                'lat' => 'required|numeric|between:-90,90',
+                'lng' => 'required|numeric|between:-180,180',
+                'radius' => 'nullable|numeric|min:0.1|max:100'
+            ]);
+
+            $latitude = $request->lat;
+            $longitude = $request->lng;
+            $radius = $request->radius ?? 10; // 10km par défaut
+
+            // Utiliser la formule de Haversine pour calculer la distance
+            $etablissements = Etablissement::with(['localisation', 'milieu', 'statut', 'systeme', 'effectif', 'infrastructure', 'equipement'])
+                ->selectRaw("*, (
+                    6371 * acos(
+                        cos(radians(?)) * 
+                        cos(radians(latitude)) * 
+                        cos(radians(longitude) - radians(?)) + 
+                        sin(radians(?)) * 
+                        sin(radians(latitude))
+                    )
+                ) AS distance", [$latitude, $longitude, $latitude])
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->having('distance', '<', $radius)
+                ->orderBy('distance')
+                ->limit(50) // Limiter à 50 établissements max
+                ->get();
+
+            return response()->json([
+                'center' => [
+                    'lat' => $latitude,
+                    'lng' => $longitude
+                ],
+                'radius' => $radius,
+                'count' => $etablissements->count(),
+                'etablissements' => $etablissements
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Données invalides',
+                'details' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de la recherche à proximité: " . $e->getMessage());
+            
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la recherche à proximité'
             ], 500);
         }
     }

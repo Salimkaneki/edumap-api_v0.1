@@ -18,11 +18,11 @@ class AdminAuthController extends Controller
 
         $admin = Admin::where('email', $request->email)->first();
 
-        if (!$admin || !Hash::check($request->password, $admin->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
+            if (!$admin || !Hash::check($request->password, $admin->password)) {
+                return response()->json([
+                    'error' => 'Les identifiants sont incorrects. Veuillez vérifier votre email et mot de passe.'
+                ], 401);
+            }
 
         // Créer un token Sanctum
         $token = $admin->createToken('admin-token')->plainTextToken;

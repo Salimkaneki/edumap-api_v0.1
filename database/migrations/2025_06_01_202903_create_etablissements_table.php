@@ -13,17 +13,22 @@ return new class extends Migration
     {
         Schema::create('etablissements', function (Blueprint $table) {
             $table->id();
-            $table->string('code_etablissement');
+            $table->string('code_etablissement')->unique();
             $table->string('nom_etablissement');
-            $table->string('latitude', 10, 8)->nullable();
-            $table->string('longitude', 11, 8)->nullable();
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
 
-            // Add ->nullable() to localisation_id since you're using onDelete('set null')
+            // Foreign keys vers les tables de référence
             $table->foreignId('localisation_id')->nullable()->constrained('localisations')->onDelete('set null');
             $table->foreignId('milieu_id')->constrained('milieux')->onDelete('cascade');
             $table->foreignId('statut_id')->constrained('statuts')->onDelete('cascade');
             $table->foreignId('systeme_id')->constrained('systemes')->onDelete('cascade');
             $table->foreignId('annee_id')->nullable()->constrained('annees')->onDelete('set null');
+            
+            // Index pour optimiser les recherches géographiques
+            $table->index(['latitude', 'longitude']);
+            $table->index('localisation_id');
+            
             $table->timestamps();
         });
     }
