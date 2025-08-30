@@ -9,7 +9,7 @@ use App\Http\Controllers\PublicEtablissementController;
 // Route utilisateur standard
 Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware('api-auth');
+})->middleware('auth:sanctum')->name('user');
 
 // ============================================
 // ROUTES PUBLIQUES (Non authentifiées)
@@ -50,7 +50,7 @@ Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
     
     // Routes protégées admin
-    Route::middleware(['api-auth', 'admin'])->group(function () {
+    Route::middleware(['auth:sanctum', 'admin'])->group(function () {
         // Routes d'authentification admin
         Route::get('/me', [AdminAuthController::class, 'me']);
         Route::post('/logout', [AdminAuthController::class, 'logout']);

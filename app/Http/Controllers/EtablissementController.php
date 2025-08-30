@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 
 class EtablissementController extends Controller
 {
@@ -449,25 +451,107 @@ class EtablissementController extends Controller
     public function stats(Request $request)
     {
         try {
+            // Compter les établissements avec des relations manquantes
+            $missingRelations = [
+                'sans_localisation' => Etablissement::whereNull('localisation_id')->count(),
+                'sans_milieu' => Etablissement::whereNull('milieu_id')->count(),
+                'sans_statut' => Etablissement::whereNull('statut_id')->count(),
+                'sans_systeme' => Etablissement::whereNull('systeme_id')->count(),
+            ];
+
             $stats = [
                 'total_etablissements' => Etablissement::count(),
-                'par_region' => Etablissement::select('region')
+                'relations_manquantes' => $missingRelations,
+                
+                // Statistiques par région (avec gestion des nulls)
+                'par_region' => Etablissement::leftJoin('localisations', 'etablissements.localisation_id', '=', 'localisations.id')
+                    ->selectRaw('IFNULL(localisations.region, "Non spécifiée") as region')
                     ->selectRaw('COUNT(*) as count')
-                    ->groupBy('region')
+                    ->groupByRaw('IFNULL(localisations.region, "Non spécifiée")')
+                    ->orderBy('count', 'desc')
                     ->get(),
-                'par_type_milieu' => Etablissement::select('libelle_type_milieu')
+                
+                // Statistiques par préfecture (avec gestion des nulls)  
+                'par_prefecture' => Etablissement::leftJoin('localisations', 'etablissements.localisation_id', '=', 'localisations.id')
+                    ->selectRaw('IFNULL(localisations.prefecture, "Non spécifiée") as prefecture')
                     ->selectRaw('COUNT(*) as count')
-                    ->groupBy('libelle_type_milieu')
+                    ->groupByRaw('IFNULL(localisations.prefecture, "Non spécifiée")')
+                    ->orderBy('count', 'desc')
+                    ->limit(10)
                     ->get(),
-                'par_statut' => Etablissement::select('libelle_type_statut_etab')
+                
+                // Statistiques par type de milieu
+                'par_type_milieu' => Etablissement::leftJoin('milieux', 'etablissements.milieu_id', '=', 'milieux.id')
+                    ->selectRaw('IFNULL(milieux.libelle_type_milieu, "Non spécifié") as libelle_type_milieu')
                     ->selectRaw('COUNT(*) as count')
-                    ->groupBy('libelle_type_statut_etab')
+                    ->groupByRaw('IFNULL(milieux.libelle_type_milieu, "Non spécifié")')
                     ->get(),
-                'total_eleves' => Etablissement::sum('tot'),
-                'total_enseignants' => Etablissement::sum('total_ense'),
-                'avec_electricite' => Etablissement::where('existe_elect', true)->count(),
-                'avec_latrines' => Etablissement::where('existe_latrine', true)->count(),
-                'avec_eau' => Etablissement::where('eau', true)->count(),
+                
+                // Statistiques par statut
+                'par_statut' => Etablissement::leftJoin('statuts', 'etablissements.statut_id', '=', 'statuts.id')
+                    ->selectRaw('IFNULL(statuts.libelle_type_statut_etab, "Non spécifié") as libelle_type_statut_etab')
+                    ->selectRaw('COUNT(*) as count')
+                    ->groupByRaw('IFNULL(statuts.libelle_type_statut_etab, "Non spécifié")')
+                    ->get(),
+                
+                // Statistiques par système
+                'par_systeme' => Etablissement::leftJoin('systemes', 'etablissements.systeme_id', '=', 'systemes.id')
+                    ->selectRaw('IFNULL(systemes.libelle_type_systeme, "Non spécifié") as libelle_type_systeme')
+                    ->selectRaw('COUNT(*) as count')
+                    ->groupByRaw('IFNULL(systemes.libelle_type_systeme, "Non spécifié")')
+                    ->get(),
+                
+                // Effectifs totaux (avec vérification de l'existence des données)
+                'effectifs' => [
+                    'total_eleves' => Etablissement::join('effectifs', 'etablissements.id', '=', 'effectifs.etablissement_id')
+                        ->sum('effectifs.tot') ?: 0,
+                    'total_enseignants' => Etablissement::join('effectifs', 'etablissements.id', '=', 'effectifs.etablissement_id')
+                        ->sum('effectifs.total_ense') ?: 0,
+                    'etablissements_avec_effectifs' => Etablissement::whereExists(function($query) {
+                        $query->select('id')->from('effectifs')->whereColumn('effectifs.etablissement_id', 'etablissements.id');
+                    })->count(),
+                ],
+                
+                // Équipements (avec vérification de l'existence des données)
+                'equipements' => [
+                    'avec_electricite' => Etablissement::join('equipements_etablissement', 'etablissements.id', '=', 'equipements_etablissement.etablissement_id')
+                        ->where('equipements_etablissement.existe_elect', true)->count(),
+                    'avec_latrines' => Etablissement::join('equipements_etablissement', 'etablissements.id', '=', 'equipements_etablissement.etablissement_id')
+                        ->where('equipements_etablissement.existe_latrine', true)->count(),
+                    'avec_eau' => Etablissement::join('equipements_etablissement', 'etablissements.id', '=', 'equipements_etablissement.etablissement_id')
+                        ->where('equipements_etablissement.eau', true)->count(),
+                    'avec_acces_toute_saison' => Etablissement::join('equipements_etablissement', 'etablissements.id', '=', 'equipements_etablissement.etablissement_id')
+                        ->where('equipements_etablissement.acces_toute_saison', true)->count(),
+                    'avec_latrines_fonctionnelles' => Etablissement::join('equipements_etablissement', 'etablissements.id', '=', 'equipements_etablissement.etablissement_id')
+                        ->where('equipements_etablissement.existe_latrine_fonct', true)->count(),
+                    'etablissements_avec_equipements' => Etablissement::whereExists(function($query) {
+                        $query->select('id')->from('equipements_etablissement')->whereColumn('equipements_etablissement.etablissement_id', 'etablissements.id');
+                    })->count(),
+                ],
+                
+                // Infrastructures
+                'infrastructures' => [
+                    'total_salles_classes' => Etablissement::join('infrastructures', 'etablissements.id', '=', 'infrastructures.etablissement_id')
+                        ->selectRaw('SUM(infrastructures.sommedenb_salles_classes_dur + infrastructures.sommedenb_salles_classes_banco + infrastructures.sommedenb_salles_classes_autre) as total')
+                        ->value('total') ?: 0,
+                    'salles_dur' => Etablissement::join('infrastructures', 'etablissements.id', '=', 'infrastructures.etablissement_id')
+                        ->sum('infrastructures.sommedenb_salles_classes_dur') ?: 0,
+                    'salles_banco' => Etablissement::join('infrastructures', 'etablissements.id', '=', 'infrastructures.etablissement_id')
+                        ->sum('infrastructures.sommedenb_salles_classes_banco') ?: 0,
+                    'salles_autre' => Etablissement::join('infrastructures', 'etablissements.id', '=', 'infrastructures.etablissement_id')
+                        ->sum('infrastructures.sommedenb_salles_classes_autre') ?: 0,
+                    'etablissements_avec_infrastructures' => Etablissement::whereExists(function($query) {
+                        $query->select('id')->from('infrastructures')->whereColumn('infrastructures.etablissement_id', 'etablissements.id');
+                    })->count(),
+                ],
+                
+                // Géolocalisation
+                'geolocalisation' => [
+                    'avec_coordonnees' => Etablissement::whereNotNull('latitude')->whereNotNull('longitude')->count(),
+                    'sans_coordonnees' => Etablissement::where(function($query) {
+                        $query->whereNull('latitude')->orWhereNull('longitude');
+                    })->count(),
+                ],
             ];
 
             return response()->json($stats);
@@ -476,7 +560,241 @@ class EtablissementController extends Controller
             Log::error("Erreur lors du calcul des statistiques: " . $e->getMessage());
             
             return response()->json([
-                'error' => 'Une erreur est survenue lors du calcul des statistiques'
+                'error' => 'Une erreur est survenue lors du calcul des statistiques',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Importer des établissements depuis un fichier Excel
+    public function import(Request $request)
+    {
+        try {
+            $admin = $request->user();
+            Log::info("Admin import établissements:", [
+                'admin_id' => $admin->id,
+                'admin_name' => $admin->name
+            ]);
+
+            // Validation du fichier
+            $validator = Validator::make($request->all(), [
+                'file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // Max 10MB
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'error' => 'Fichier invalide',
+                    'details' => $validator->errors()
+                ], 422);
+            }
+
+            $file = $request->file('file');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('imports', $fileName, 'local');
+
+            Log::info("Fichier uploadé:", ['path' => $filePath]);
+
+            // Lire le fichier Excel
+            $data = Excel::toArray([], storage_path('app/' . $filePath));
+            
+            if (empty($data) || empty($data[0])) {
+                return response()->json([
+                    'error' => 'Le fichier Excel est vide ou invalide'
+                ], 422);
+            }
+
+            $rows = $data[0]; // Première feuille
+            $headers = array_shift($rows); // Première ligne = en-têtes
+            
+            Log::info("Headers trouvés:", $headers);
+
+            // Mapper les colonnes (vous devrez ajuster selon votre fichier Excel)
+            $columnMapping = [
+                'code_etablissement' => 'Code_etab',
+                'nom_etablissement' => 'Nom_etab',
+                'region' => 'Region',
+                'prefecture' => 'Prefecture',
+                'canton_village_autonome' => 'Canton_ou_village_autonome',
+                'ville_village_quartier' => 'Ville_village_quartier',
+                'libelle_type_milieu' => 'Libelle_type_milieu',
+                'libelle_type_statut_etab' => 'Libelle_type_statut_etab',
+                'libelle_type_systeme' => 'Libelle_type_systeme',
+                'existe_elect' => 'Existe_elect',
+                'existe_latrine' => 'Existe_latrine',
+                'existe_latrine_fonct' => 'Existe_latrine_fonct',
+                'acces_toute_saison' => 'Acces_toute_saison',
+                'eau' => 'Eau',
+                'latitude' => 'Latitude',
+                'longitude' => 'Longitude',
+                'sommedenb_eff_g' => 'SommedenbEffG',
+                'sommedenb_eff_f' => 'SommedenbEffF',
+                'tot' => 'Tot',
+                'sommedenb_ens_h' => 'SommedenbEnsH',
+                'sommedenb_ens_f' => 'SommedenbEnsF',
+                'total_ense' => 'TotalEnse',
+                'sommedenb_salles_classes_dur' => 'SommedenbSallesClassesDur',
+                'sommedenb_salles_classes_banco' => 'SommedenbSallesClassesBanco',
+                'sommedenb_salles_classes_autre' => 'SommedenbSallesClassesAutre',
+                'libelle_type_annee' => 'Libelle_type_annee',
+                'commune_etab' => 'Commune_etab'
+            ];
+
+            // Créer un index des colonnes
+            $columnIndexes = [];
+            foreach ($headers as $index => $header) {
+                $columnIndexes[trim($header)] = $index;
+            }
+
+            $imported = 0;
+            $errors = [];
+            $skipped = 0;
+
+            DB::beginTransaction();
+
+            foreach ($rows as $rowIndex => $row) {
+                try {
+                    $etablissementData = [];
+                    
+                    // Mapper les données selon le mapping des colonnes
+                    foreach ($columnMapping as $dbField => $excelColumn) {
+                        if (isset($columnIndexes[$excelColumn])) {
+                            $value = $row[$columnIndexes[$excelColumn]] ?? null;
+                            
+                            // Nettoyer et convertir les valeurs
+                            if (in_array($dbField, ['existe_elect', 'existe_latrine', 'existe_latrine_fonct', 'acces_toute_saison', 'eau'])) {
+                                // Convertir en booléen
+                                $etablissementData[$dbField] = in_array(strtolower(trim($value)), ['oui', 'yes', '1', 'true', 'vrai']);
+                            } elseif (in_array($dbField, ['latitude', 'longitude'])) {
+                                // Convertir en float
+                                $etablissementData[$dbField] = is_numeric($value) ? (float)$value : null;
+                            } elseif (in_array($dbField, ['sommedenb_eff_g', 'sommedenb_eff_f', 'tot', 'sommedenb_ens_h', 'sommedenb_ens_f', 'total_ense', 'sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'])) {
+                                // Convertir en entier
+                                $etablissementData[$dbField] = is_numeric($value) ? (int)$value : 0;
+                            } else {
+                                // Garder comme string
+                                $etablissementData[$dbField] = trim($value);
+                            }
+                        }
+                    }
+
+                    // Vérifier les champs obligatoires
+                    if (empty($etablissementData['code_etablissement']) || empty($etablissementData['nom_etablissement'])) {
+                        $errors[] = "Ligne " . ($rowIndex + 2) . ": Code ou nom d'établissement manquant";
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Vérifier si l'établissement existe déjà
+                    if (Etablissement::where('code_etablissement', $etablissementData['code_etablissement'])->exists()) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Mapper les libellés vers les IDs
+                    if (!empty($etablissementData['libelle_type_milieu'])) {
+                        $milieu = Milieu::where('libelle_type_milieu', $etablissementData['libelle_type_milieu'])->first();
+                        if ($milieu) {
+                            $etablissementData['milieu_id'] = $milieu->id;
+                        }
+                        unset($etablissementData['libelle_type_milieu']);
+                    }
+
+                    if (!empty($etablissementData['libelle_type_statut_etab'])) {
+                        $statut = Statut::where('libelle_type_statut_etab', $etablissementData['libelle_type_statut_etab'])->first();
+                        if ($statut) {
+                            $etablissementData['statut_id'] = $statut->id;
+                        }
+                        unset($etablissementData['libelle_type_statut_etab']);
+                    }
+
+                    if (!empty($etablissementData['libelle_type_systeme'])) {
+                        $systeme = Systeme::where('libelle_type_systeme', $etablissementData['libelle_type_systeme'])->first();
+                        if ($systeme) {
+                            $etablissementData['systeme_id'] = $systeme->id;
+                        }
+                        unset($etablissementData['libelle_type_systeme']);
+                    }
+
+                    if (!empty($etablissementData['libelle_type_annee'])) {
+                        $annee = Annee::where('libelle_type_annee', $etablissementData['libelle_type_annee'])->first();
+                        if ($annee) {
+                            $etablissementData['annee_id'] = $annee->id;
+                        }
+                        unset($etablissementData['libelle_type_annee']);
+                    }
+
+                    // Créer l'établissement
+                    Etablissement::create($etablissementData);
+                    $imported++;
+
+                } catch (\Exception $e) {
+                    $errors[] = "Ligne " . ($rowIndex + 2) . ": " . $e->getMessage();
+                    Log::error("Erreur import ligne " . ($rowIndex + 2), [
+                        'error' => $e->getMessage(),
+                        'data' => $etablissementData ?? []
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            // Supprimer le fichier temporaire
+            unlink(storage_path('app/' . $filePath));
+
+            // Vider le cache
+            Cache::flush();
+
+            Log::info("Import terminé:", [
+                'imported' => $imported,
+                'skipped' => $skipped,
+                'errors' => count($errors),
+                'admin' => $admin->name
+            ]);
+
+            return response()->json([
+                'message' => 'Import terminé avec succès',
+                'statistics' => [
+                    'imported' => $imported,
+                    'skipped' => $skipped,
+                    'errors' => count($errors)
+                ],
+                'errors' => $errors
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error("Erreur lors de l'import: " . $e->getMessage(), [
+                'exception' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de l\'import',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Exporter les établissements vers Excel
+    public function export(Request $request)
+    {
+        try {
+            $admin = $request->user();
+            Log::info("Admin export établissements:", [
+                'admin_id' => $admin->id,
+                'admin_name' => $admin->name
+            ]);
+
+            // Pour l'instant, retourner un message indiquant que l'export sera implémenté
+            return response()->json([
+                'message' => 'Fonctionnalité d\'export en cours de développement'
+            ], 501);
+
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de l'export: " . $e->getMessage());
+            
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de l\'export'
             ], 500);
         }
     }
