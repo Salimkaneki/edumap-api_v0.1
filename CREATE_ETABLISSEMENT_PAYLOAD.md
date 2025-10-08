@@ -1,6 +1,16 @@
 # Payload pour Créer un Établissement - EduMap API
 
-## Payload JSON complet pour créer un établissement :
+## Payload JSON complet pour créer u## Notes importantes
+
+1. **Authentification requise** : L'utilisateur doit être authentifié en tant qu'admin
+2. **Calculs automatiques** : Si `tot` ou `total_ense` ne sont pas fournis, ils sont calculés automatiquement :
+   - `tot` = `sommedenb_eff_g` + `sommedenb_eff_f`
+   - `total_ense` = `sommedenb_ens_h` + `sommedenb_ens_f`
+3. **Création automatique des enregistrements liés** : Si vous fournissez des données d'effectifs, d'équipements ou d'infrastructures, les enregistrements correspondants seront automatiquement créés dans les tables `effectifs`, `equipements_etablissement` et `infrastructures`
+4. **Mapping automatique** : Les libellés (`libelle_type_milieu`, etc.) sont automatiquement convertis en IDs de base de données
+5. **Unicité** : `code_etablissement` doit être unique dans toute la base de données
+6. **Types de données stricts** : Les valeurs boolean doivent être `true`/`false`, les nombres doivent être numériques
+7. **Valeurs par défaut** : Les champs numériques non définis retournent `0` au lieu de `null` dans les réponses JSONement :
 
 ```json
 {
@@ -94,11 +104,10 @@
 2. **Calculs automatiques** : Si `tot` ou `total_ense` ne sont pas fournis, ils sont calculés automatiquement :
     - `tot` = `sommedenb_eff_g` + `sommedenb_eff_f`
     - `total_ense` = `sommedenb_ens_h` + `sommedenb_ens_f`
-3. **Mapping automatique** : Les libellés (`libelle_type_milieu`, etc.) sont automatiquement convertis en IDs de base de données
-4. **Unicité** : `code_etablissement` doit être unique dans toute la base de données
-5. **Types de données stricts** : Les valeurs boolean doivent être `true`/`false`, les nombres doivent être numériques
-
-## Exemple minimal (champs obligatoires uniquement)
+3. **Création automatique des enregistrements liés** : Si vous fournissez des données d'effectifs, d'équipements ou d'infrastructures, les enregistrements correspondants seront automatiquement créés dans les tables `effectifs`, `equipements_etablissement` et `infrastructures`
+4. **Mapping automatique** : Les libellés (`libelle_type_milieu`, etc.) sont automatiquement convertis en IDs de base de données
+5. **Unicité** : `code_etablissement` doit être unique dans toute la base de données
+6. **Types de données stricts** : Les valeurs boolean doivent être `true`/`false`, les nombres doivent être numériques## Exemple minimal (champs obligatoires uniquement)
 
 ```json
 {
@@ -128,6 +137,28 @@
     "sommedenb_eff_f": 180
 }
 ```
+
+## Création automatique des données liées
+
+Lors de la création **OU MISE À JOUR** d'un établissement, le système crée automatiquement les enregistrements dans les tables liées si les données correspondantes sont fournies :
+
+### Effectifs (`effectifs`)
+
+Créés automatiquement si au moins un des champs suivants est fourni :
+
+-   `sommedenb_eff_g`, `sommedenb_eff_f`, `tot`, `sommedenb_ens_h`, `sommedenb_ens_f`, `total_ense`
+
+### Équipements (`equipements_etablissement`)
+
+Créés automatiquement si au moins un des champs suivants est fourni :
+
+-   `existe_elect`, `existe_latrine`, `existe_latrine_fonct`, `acces_toute_saison`, `eau`
+
+### Infrastructures (`infrastructures`)
+
+Créés automatiquement si au moins un des champs suivants est fourni :
+
+-   `sommedenb_salles_classes_dur`, `sommedenb_salles_classes_banco`, `sommedenb_salles_classes_autre`
 
 ## Endpoint API
 

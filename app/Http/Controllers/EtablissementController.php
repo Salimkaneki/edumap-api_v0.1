@@ -10,6 +10,9 @@ use App\Models\Milieu;
 use App\Models\Statut;
 use App\Models\Systeme;
 use App\Models\Annee;
+use App\Models\Effectif;
+use App\Models\EquipementEtablissement;
+use App\Models\Infrastructure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -233,6 +236,75 @@ class EtablissementController extends Controller
 
             $etablissement = Etablissement::create($data);
 
+            // === CRÉATION AUTOMATIQUE DES ENREGISTREMENTS LIÉS ===
+            
+            // 1. Créer les effectifs si les données sont fournies
+            $effectifFields = ['sommedenb_eff_g', 'sommedenb_eff_f', 'tot', 'sommedenb_ens_h', 'sommedenb_ens_f', 'total_ense'];
+            $hasEffectifData = false;
+            foreach ($effectifFields as $field) {
+                if (isset($request[$field]) && $request[$field] !== null) {
+                    $hasEffectifData = true;
+                    break;
+                }
+            }
+            
+            if ($hasEffectifData) {
+                Effectif::create([
+                    'etablissement_id' => $etablissement->id,
+                    'sommedenb_eff_g' => $request['sommedenb_eff_g'] ?? 0,
+                    'sommedenb_eff_f' => $request['sommedenb_eff_f'] ?? 0,
+                    'tot' => $request['tot'] ?? (($request['sommedenb_eff_g'] ?? 0) + ($request['sommedenb_eff_f'] ?? 0)),
+                    'sommedenb_ens_h' => $request['sommedenb_ens_h'] ?? 0,
+                    'sommedenb_ens_f' => $request['sommedenb_ens_f'] ?? 0,
+                    'total_ense' => $request['total_ense'] ?? (($request['sommedenb_ens_h'] ?? 0) + ($request['sommedenb_ens_f'] ?? 0)),
+                ]);
+                Log::info("Effectifs créés pour l'établissement:", ['etablissement_id' => $etablissement->id]);
+            }
+            
+            // 2. Créer les équipements si les données sont fournies
+            $equipementFields = ['existe_elect', 'existe_latrine', 'existe_latrine_fonct', 'acces_toute_saison', 'eau'];
+            $hasEquipementData = false;
+            foreach ($equipementFields as $field) {
+                if (isset($request[$field]) && $request[$field] !== null) {
+                    $hasEquipementData = true;
+                    break;
+                }
+            }
+            
+            if ($hasEquipementData) {
+                EquipementEtablissement::create([
+                    'etablissement_id' => $etablissement->id,
+                    'existe_elect' => $request['existe_elect'] ?? false,
+                    'existe_latrine' => $request['existe_latrine'] ?? false,
+                    'existe_latrine_fonct' => $request['existe_latrine_fonct'] ?? false,
+                    'acces_toute_saison' => $request['acces_toute_saison'] ?? false,
+                    'eau' => $request['eau'] ?? false,
+                ]);
+                Log::info("Équipements créés pour l'établissement:", ['etablissement_id' => $etablissement->id]);
+            }
+            
+            // 3. Créer les infrastructures si les données sont fournies
+            $infrastructureFields = ['sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'];
+            $hasInfrastructureData = false;
+            foreach ($infrastructureFields as $field) {
+                if (isset($request[$field]) && $request[$field] !== null) {
+                    $hasInfrastructureData = true;
+                    break;
+                }
+            }
+            
+            if ($hasInfrastructureData) {
+                Infrastructure::create([
+                    'etablissement_id' => $etablissement->id,
+                    'sommedenb_salles_classes_dur' => $request['sommedenb_salles_classes_dur'] ?? 0,
+                    'sommedenb_salles_classes_banco' => $request['sommedenb_salles_classes_banco'] ?? 0,
+                    'sommedenb_salles_classes_autre' => $request['sommedenb_salles_classes_autre'] ?? 0,
+                ]);
+                Log::info("Infrastructures créées pour l'établissement:", ['etablissement_id' => $etablissement->id]);
+            }
+            
+            // === FIN CRÉATION AUTOMATIQUE ===
+
             // Vider le cache
             Cache::flush();
 
@@ -243,9 +315,43 @@ class EtablissementController extends Controller
             ]);
 
         $etablissement->refresh(); // Recharge les relations
+        
+        // Transformer les valeurs null en 0 pour les champs numériques
+        $etablissementData = $etablissement->load(['milieu', 'statut', 'systeme', 'annee', 'effectif', 'equipement', 'infrastructure'])->toArray();
+        
+        // Champs numériques à transformer
+        $numericFields = [
+            'sommedenb_eff_g', 'sommedenb_eff_f', 'tot', 'sommedenb_ens_h', 'sommedenb_ens_f', 'total_ense',
+            'sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'
+        ];
+        
+        foreach ($numericFields as $field) {
+            if (isset($etablissementData[$field]) && $etablissementData[$field] === null) {
+                $etablissementData[$field] = 0;
+            }
+        }
+        
+        // Transformer aussi dans les relations
+        if (isset($etablissementData['effectif'])) {
+            foreach ($numericFields as $field) {
+                if (isset($etablissementData['effectif'][$field]) && $etablissementData['effectif'][$field] === null) {
+                    $etablissementData['effectif'][$field] = 0;
+                }
+            }
+        }
+        
+        if (isset($etablissementData['infrastructure'])) {
+            $infraFields = ['sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'];
+            foreach ($infraFields as $field) {
+                if (isset($etablissementData['infrastructure'][$field]) && $etablissementData['infrastructure'][$field] === null) {
+                    $etablissementData['infrastructure'][$field] = 0;
+                }
+            }
+        }
+        
         return response()->json([
             'message' => 'Établissement créé avec succès',
-            'data' => $etablissement->load(['milieu', 'statut', 'systeme', 'annee'])
+            'data' => $etablissementData
         ], 201);
 
         } catch (\Exception $e) {
@@ -373,6 +479,57 @@ class EtablissementController extends Controller
 
             $etablissement->update($data);
 
+            // === AJOUT : Création automatique des enregistrements liés si les données sont fournies ===
+            
+            // Créer l'effectif si les données sont fournies
+            if (isset($data['sommedenb_eff_g']) || isset($data['sommedenb_eff_f']) || isset($data['tot']) ||
+                isset($data['sommedenb_ens_h']) || isset($data['sommedenb_ens_f']) || isset($data['total_ense'])) {
+                
+                Effectif::updateOrCreate(
+                    ['etablissement_id' => $etablissement->id],
+                    [
+                        'sommedenb_eff_g' => $data['sommedenb_eff_g'] ?? $etablissement->sommedenb_eff_g ?? 0,
+                        'sommedenb_eff_f' => $data['sommedenb_eff_f'] ?? $etablissement->sommedenb_eff_f ?? 0,
+                        'tot' => $data['tot'] ?? $etablissement->tot ?? 0,
+                        'sommedenb_ens_h' => $data['sommedenb_ens_h'] ?? $etablissement->sommedenb_ens_h ?? 0,
+                        'sommedenb_ens_f' => $data['sommedenb_ens_f'] ?? $etablissement->sommedenb_ens_f ?? 0,
+                        'total_ense' => $data['total_ense'] ?? $etablissement->total_ense ?? 0,
+                    ]
+                );
+            }
+
+            // Créer l'équipement si les données sont fournies
+            if (isset($data['existe_elect']) || isset($data['existe_latrine']) || isset($data['existe_latrine_fonct']) ||
+                isset($data['acces_toute_saison']) || isset($data['eau'])) {
+                
+                EquipementEtablissement::updateOrCreate(
+                    ['etablissement_id' => $etablissement->id],
+                    [
+                        'existe_elect' => $data['existe_elect'] ?? $etablissement->existe_elect ?? false,
+                        'existe_latrine' => $data['existe_latrine'] ?? $etablissement->existe_latrine ?? false,
+                        'existe_latrine_fonct' => $data['existe_latrine_fonct'] ?? $etablissement->existe_latrine_fonct ?? false,
+                        'acces_toute_saison' => $data['acces_toute_saison'] ?? $etablissement->acces_toute_saison ?? false,
+                        'eau' => $data['eau'] ?? $etablissement->eau ?? false,
+                    ]
+                );
+            }
+
+            // Créer l'infrastructure si les données sont fournies
+            if (isset($data['sommedenb_salles_classes_dur']) || isset($data['sommedenb_salles_classes_banco']) || 
+                isset($data['sommedenb_salles_classes_autre'])) {
+                
+                Infrastructure::updateOrCreate(
+                    ['etablissement_id' => $etablissement->id],
+                    [
+                        'sommedenb_salles_classes_dur' => $data['sommedenb_salles_classes_dur'] ?? $etablissement->sommedenb_salles_classes_dur ?? 0,
+                        'sommedenb_salles_classes_banco' => $data['sommedenb_salles_classes_banco'] ?? $etablissement->sommedenb_salles_classes_banco ?? 0,
+                        'sommedenb_salles_classes_autre' => $data['sommedenb_salles_classes_autre'] ?? $etablissement->sommedenb_salles_classes_autre ?? 0,
+                    ]
+                );
+            }
+
+            // === FIN AJOUT ===
+
             // Vider le cache
             Cache::flush();
 
@@ -381,9 +538,45 @@ class EtablissementController extends Controller
                 'modified_by' => $admin->name
             ]);
 
+            // Charger les relations pour la réponse
+            $etablissement->load(['localisation', 'milieu', 'statut', 'systeme', 'annee', 'effectif', 'equipement', 'infrastructure']);
+            
+            // Transformer les valeurs null en 0 pour les champs numériques
+            $etablissementData = $etablissement->toArray();
+            
+            // Champs numériques à transformer
+            $numericFields = [
+                'sommedenb_eff_g', 'sommedenb_eff_f', 'tot', 'sommedenb_ens_h', 'sommedenb_ens_f', 'total_ense',
+                'sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'
+            ];
+            
+            foreach ($numericFields as $field) {
+                if (isset($etablissementData[$field]) && $etablissementData[$field] === null) {
+                    $etablissementData[$field] = 0;
+                }
+            }
+            
+            // Transformer aussi dans les relations
+            if (isset($etablissementData['effectif'])) {
+                foreach ($numericFields as $field) {
+                    if (isset($etablissementData['effectif'][$field]) && $etablissementData['effectif'][$field] === null) {
+                        $etablissementData['effectif'][$field] = 0;
+                    }
+                }
+            }
+            
+            if (isset($etablissementData['infrastructure'])) {
+                $infraFields = ['sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'];
+                foreach ($infraFields as $field) {
+                    if (isset($etablissementData['infrastructure'][$field]) && $etablissementData['infrastructure'][$field] === null) {
+                        $etablissementData['infrastructure'][$field] = 0;
+                    }
+                }
+            }
+
             return response()->json([
                 'message' => 'Établissement modifié avec succès',
-                'etablissement' => $etablissement
+                'etablissement' => $etablissementData
             ]);
 
         } catch (\Exception $e) {
