@@ -30,7 +30,44 @@ class EtablissementController extends Controller
 
         $cacheKey = 'etablissements_page_' . $page . '_per_page_' . $perPage;
         $etablissements = Cache::remember($cacheKey, 60, function () use ($perPage) {
-            return Etablissement::paginate($perPage);
+            return Etablissement::with(['localisation', 'milieu', 'statut', 'systeme', 'annee', 'effectif', 'equipement', 'infrastructure'])->paginate($perPage);
+        });
+
+        // Transformer les données pour chaque établissement
+        $etablissements->getCollection()->transform(function ($etablissement) {
+            $etablissementData = $etablissement->toArray();
+            
+            // Transformer les valeurs null en 0 pour les champs numériques
+            $numericFields = [
+                'sommedenb_eff_g', 'sommedenb_eff_f', 'tot', 'sommedenb_ens_h', 'sommedenb_ens_f', 'total_ense',
+                'sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'
+            ];
+            
+            foreach ($numericFields as $field) {
+                if (isset($etablissementData[$field]) && $etablissementData[$field] === null) {
+                    $etablissementData[$field] = 0;
+                }
+            }
+            
+            // Transformer aussi dans les relations
+            if (isset($etablissementData['effectif'])) {
+                foreach ($numericFields as $field) {
+                    if (isset($etablissementData['effectif'][$field]) && $etablissementData['effectif'][$field] === null) {
+                        $etablissementData['effectif'][$field] = 0;
+                    }
+                }
+            }
+            
+            if (isset($etablissementData['infrastructure'])) {
+                $infraFields = ['sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'];
+                foreach ($infraFields as $field) {
+                    if (isset($etablissementData['infrastructure'][$field]) && $etablissementData['infrastructure'][$field] === null) {
+                        $etablissementData['infrastructure'][$field] = 0;
+                    }
+                }
+            }
+            
+            return $etablissementData;
         });
 
         return response()->json($etablissements);
@@ -53,7 +90,40 @@ class EtablissementController extends Controller
             
             Log::info("Établissement trouvé:", ['id' => $etablissement->id, 'nom' => $etablissement->nom_etablissement]);
             
-            return response()->json($etablissement);
+            // Charger les relations et transformer les données
+            $etablissementData = $etablissement->load(['localisation', 'milieu', 'statut', 'systeme', 'annee', 'effectif', 'equipement', 'infrastructure'])->toArray();
+            
+            // Transformer les valeurs null en 0 pour les champs numériques
+            $numericFields = [
+                'sommedenb_eff_g', 'sommedenb_eff_f', 'tot', 'sommedenb_ens_h', 'sommedenb_ens_f', 'total_ense',
+                'sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'
+            ];
+            
+            foreach ($numericFields as $field) {
+                if (isset($etablissementData[$field]) && $etablissementData[$field] === null) {
+                    $etablissementData[$field] = 0;
+                }
+            }
+            
+            // Transformer aussi dans les relations
+            if (isset($etablissementData['effectif'])) {
+                foreach ($numericFields as $field) {
+                    if (isset($etablissementData['effectif'][$field]) && $etablissementData['effectif'][$field] === null) {
+                        $etablissementData['effectif'][$field] = 0;
+                    }
+                }
+            }
+            
+            if (isset($etablissementData['infrastructure'])) {
+                $infraFields = ['sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'];
+                foreach ($infraFields as $field) {
+                    if (isset($etablissementData['infrastructure'][$field]) && $etablissementData['infrastructure'][$field] === null) {
+                        $etablissementData['infrastructure'][$field] = 0;
+                    }
+                }
+            }
+            
+            return response()->json($etablissementData);
         } catch (\Exception $e) {
             Log::error("Erreur lors de la recherche de l'établissement: " . $e->getMessage(), [
                 'id' => $id,
@@ -118,7 +188,46 @@ class EtablissementController extends Controller
             $query->where('eau', $request->eau);
         }
 
-        $etablissements = $query->paginate($request->per_page ?? 10);
+        $etablissements = $query->with(['localisation', 'milieu', 'statut', 'systeme', 'annee', 'effectif', 'equipement', 'infrastructure'])
+                                ->paginate($request->per_page ?? 10);
+        
+        // Transformer les données pour chaque établissement
+        $etablissements->getCollection()->transform(function ($etablissement) {
+            $etablissementData = $etablissement->toArray();
+            
+            // Transformer les valeurs null en 0 pour les champs numériques
+            $numericFields = [
+                'sommedenb_eff_g', 'sommedenb_eff_f', 'tot', 'sommedenb_ens_h', 'sommedenb_ens_f', 'total_ense',
+                'sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'
+            ];
+            
+            foreach ($numericFields as $field) {
+                if (isset($etablissementData[$field]) && $etablissementData[$field] === null) {
+                    $etablissementData[$field] = 0;
+                }
+            }
+            
+            // Transformer aussi dans les relations
+            if (isset($etablissementData['effectif'])) {
+                foreach ($numericFields as $field) {
+                    if (isset($etablissementData['effectif'][$field]) && $etablissementData['effectif'][$field] === null) {
+                        $etablissementData['effectif'][$field] = 0;
+                    }
+                }
+            }
+            
+            if (isset($etablissementData['infrastructure'])) {
+                $infraFields = ['sommedenb_salles_classes_dur', 'sommedenb_salles_classes_banco', 'sommedenb_salles_classes_autre'];
+                foreach ($infraFields as $field) {
+                    if (isset($etablissementData['infrastructure'][$field]) && $etablissementData['infrastructure'][$field] === null) {
+                        $etablissementData['infrastructure'][$field] = 0;
+                    }
+                }
+            }
+            
+            return $etablissementData;
+        });
+        
         return response()->json($etablissements);
     }
 
@@ -214,8 +323,33 @@ class EtablissementController extends Controller
             }
             
             // 5. Gérer la localisation (optionnel)
-            // Vous pouvez ajouter la logique pour mapper region/prefecture vers localisation_id
-            // Pour l'instant, on laisse localisation_id à null (c'est nullable dans la migration)
+            if (isset($data['region']) || isset($data['prefecture']) || isset($data['canton_village_autonome']) || 
+                isset($data['ville_village_quartier']) || isset($data['commune_etab'])) {
+                
+                $localisationData = [
+                    'region' => $data['region'] ?? null,
+                    'prefecture' => $data['prefecture'] ?? null,
+                    'canton_village_autonome' => $data['canton_village_autonome'] ?? null,
+                    'ville_village_quartier' => $data['ville_village_quartier'] ?? null,
+                    'commune_etab' => $data['commune_etab'] ?? null,
+                ];
+                
+                // Chercher une localisation existante avec ces critères
+                $localisation = Localisation::where('region', $localisationData['region'])
+                    ->where('prefecture', $localisationData['prefecture'])
+                    ->where('canton_village_autonome', $localisationData['canton_village_autonome'])
+                    ->where('ville_village_quartier', $localisationData['ville_village_quartier'])
+                    ->where('commune_etab', $localisationData['commune_etab'])
+                    ->first();
+                
+                if (!$localisation) {
+                    // Créer la localisation si elle n'existe pas
+                    $localisation = Localisation::create($localisationData);
+                    Log::info("Localisation créée:", $localisationData);
+                }
+                
+                $data['localisation_id'] = $localisation->id;
+            }
             
             // === FIN CORRECTION ===
 
@@ -233,6 +367,11 @@ class EtablissementController extends Controller
             unset($data['libelle_type_statut_etab']);
             unset($data['libelle_type_systeme']);
             unset($data['libelle_type_annee']);
+            unset($data['region']);
+            unset($data['prefecture']);
+            unset($data['canton_village_autonome']);
+            unset($data['ville_village_quartier']);
+            unset($data['commune_etab']);
 
             $etablissement = Etablissement::create($data);
 
@@ -462,6 +601,38 @@ class EtablissementController extends Controller
                     }
                 }
                 unset($data['libelle_type_annee']);
+            }
+            
+            // Gérer la localisation (optionnel)
+            if (isset($data['region']) || isset($data['prefecture']) || isset($data['canton_village_autonome']) || 
+                isset($data['ville_village_quartier']) || isset($data['commune_etab'])) {
+                
+                $localisationData = [
+                    'region' => $data['region'] ?? $etablissement->localisation->region ?? null,
+                    'prefecture' => $data['prefecture'] ?? $etablissement->localisation->prefecture ?? null,
+                    'canton_village_autonome' => $data['canton_village_autonome'] ?? $etablissement->localisation->canton_village_autonome ?? null,
+                    'ville_village_quartier' => $data['ville_village_quartier'] ?? $etablissement->localisation->ville_village_quartier ?? null,
+                    'commune_etab' => $data['commune_etab'] ?? $etablissement->localisation->commune_etab ?? null,
+                ];
+                
+                // Chercher une localisation existante avec ces critères
+                $localisation = Localisation::where('region', $localisationData['region'])
+                    ->where('prefecture', $localisationData['prefecture'])
+                    ->where('canton_village_autonome', $localisationData['canton_village_autonome'])
+                    ->where('ville_village_quartier', $localisationData['ville_village_quartier'])
+                    ->where('commune_etab', $localisationData['commune_etab'])
+                    ->first();
+                
+                if (!$localisation) {
+                    // Créer la localisation si elle n'existe pas
+                    $localisation = Localisation::create($localisationData);
+                    Log::info("Localisation créée:", $localisationData);
+                }
+                
+                $data['localisation_id'] = $localisation->id;
+                
+                // Supprimer les champs de localisation du data pour éviter les erreurs d'insertion
+                unset($data['region'], $data['prefecture'], $data['canton_village_autonome'], $data['ville_village_quartier'], $data['commune_etab']);
             }
             
             // === FIN CORRECTION ===
