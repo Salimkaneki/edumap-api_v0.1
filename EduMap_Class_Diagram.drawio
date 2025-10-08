@@ -1,0 +1,133 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36" version="28.1.2">
+  <diagram name="EduMap API - Diagramme de Classes" id="c4acf3e9-155e-7222-9cf6-157b1a14988f">
+    <mxGraphModel dx="2194" dy="1195" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Admin" value="Admin&#xa;―――――――――――――――&#xa;- id: number&#xa;- name: string&#xa;- email: string&#xa;- password: string&#xa;- role: string&#xa;- emailVerifiedAt: Date&#xa;- rememberToken: string&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ isSuperAdmin(): boolean&#xa;+ isAdmin(): boolean&#xa;+ getName(): string&#xa;+ getRole(): string&#xa;+ manageUsers(): void" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="90" width="230" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="Etablissement" value="Etablissement&#xa;―――――――――――――――&#xa;- id: number&#xa;- codeEtablissement: string&#xa;- nomEtablissement: string&#xa;- latitude: number&#xa;- longitude: number&#xa;- localisationId: number&#xa;- milieuId: number&#xa;- statutId: number&#xa;- systemeId: number&#xa;- anneeId: number&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ getLocalisation(): Localisation&#xa;+ getMilieu(): Milieu&#xa;+ getStatut(): Statut&#xa;+ getSysteme(): Systeme&#xa;+ getAnnee(): Annee&#xa;+ getEquipement(): EquipementEtablissement&#xa;+ getEffectif(): Effectif&#xa;+ getInfrastructure(): Infrastructure&#xa;+ findNearby(lat: number, lng: number): Etablissement[]&#xa;+ filterByRegion(region: string): Etablissement[]&#xa;+ getFullData(): object" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="400" width="450" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="Localisation" value="Localisation&#xa;―――――――――――――――&#xa;- id: number&#xa;- region: string&#xa;- prefecture: string&#xa;- cantonVillageAutonome: string&#xa;- villeVillageQuartier: string&#xa;- communeEtab: string&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ getEtablissements(): Etablissement[]&#xa;+ getFullAddress(): string&#xa;+ countEtablissements(): number" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="700" y="550" width="350" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="Milieu" value="Milieu&#xa;―――――――――――――――&#xa;- id: number&#xa;- libelleTypeMilieu: string&#xa;- description: string&#xa;- active: boolean&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ getEtablissements(): Etablissement[]&#xa;+ isActive(): boolean&#xa;+ activate(): void&#xa;+ deactivate(): void" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="1850" y="430" width="280" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="Statut" value="Statut&#xa;―――――――――――――――&#xa;- id: number&#xa;- libelleTypeStatutEtab: string&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ getEtablissements(): Etablissement[]&#xa;+ getLibelle(): string" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="1840" y="640" width="280" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="Systeme" value="Systeme&#xa;―――――――――――――――&#xa;- id: number&#xa;- libelleTypeSysteme: string&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ getEtablissements(): Etablissement[]&#xa;+ getLibelle(): string" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="1800" y="880" width="280" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="Annee" value="Annee&#xa;―――――――――――――――&#xa;- id: number&#xa;- libelleTypeAnnee: string&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ getEtablissements(): Etablissement[]&#xa;+ getLibelle(): string" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="1820" y="220" width="280" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="EquipementEtablissement" value="EquipementEtablissement&#xa;―――――――――――――――&#xa;- id: number&#xa;- etablissementId: number&#xa;- existeElect: boolean&#xa;- existeLatrine: boolean&#xa;- existeLatrineFonct: boolean&#xa;- accesTouteSaison: boolean&#xa;- eau: boolean&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ getEtablissement(): Etablissement&#xa;+ hasElectricity(): boolean&#xa;+ hasWater(): boolean&#xa;+ hasLatrine(): boolean&#xa;+ hasSeasonalAccess(): boolean&#xa;+ getEquipmentSummary(): object" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="700" y="850" width="350" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="Effectif" value="Effectif&#xa;―――――――――――――――&#xa;- id: number&#xa;- etablissementId: number&#xa;- sommeDenbEffG: number&#xa;- sommeDenbEffF: number&#xa;- total: number&#xa;- sommeDenbEnsH: number&#xa;- sommeDenbEnsF: number&#xa;- totalEnse: number&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ getEtablissement(): Etablissement&#xa;+ getTotalEleves(): number&#xa;+ getTotalEnseignants(): number&#xa;+ getRatioElevesEnseignants(): number&#xa;+ getStatistiques(): object" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="950" width="350" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="Infrastructure" value="Infrastructure&#xa;―――――――――――――――&#xa;- id: number&#xa;- etablissementId: number&#xa;- sommeDenbSallesClassesDur: number&#xa;- sommeDenbSallesClassesBanco: number&#xa;- sommeDenbSallesClassesAutre: number&#xa;- createdAt: Date&#xa;- updatedAt: Date&#xa;―――――――――――――――&#xa;+ getEtablissement(): Etablissement&#xa;+ getTotalSalles(): number&#xa;+ getSallesByType(): object&#xa;+ calculateCapacity(): number" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="1720" y="1080" width="350" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="rel1" value="" style="endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.3;exitDx=0;exitDy=0;" parent="1" source="Etablissement" target="Localisation" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1150" y="600" as="sourcePoint" />
+            <mxPoint x="1200" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel1_label" value="0..*" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1165" y="540" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel1_label2" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="630" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel2" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.3;exitDx=0;exitDy=0;" parent="1" source="Etablissement" target="Milieu" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1650" y="600" as="sourcePoint" />
+            <mxPoint x="1700" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel2_label" value="0..*" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1655" y="520" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel2_label2" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1820" y="530" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel3" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="Etablissement" target="Statut" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1650" y="700" as="sourcePoint" />
+            <mxPoint x="1700" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel3_label" value="0..*" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1670" y="750" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel3_label2" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1820" y="720" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel4" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.7;exitDx=0;exitDy=0;" parent="1" source="Etablissement" target="Systeme" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1650" y="800" as="sourcePoint" />
+            <mxPoint x="1700" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel4_label2" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1780" y="950" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel5" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.2;exitDx=0;exitDy=0;" parent="1" source="Etablissement" target="Annee" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1650" y="500" as="sourcePoint" />
+            <mxPoint x="2100" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel5_label" value="0..*" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1900" y="480" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel5_label2" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1790" y="280" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel6" value="" style="endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;exitX=0;exitY=0.8;exitDx=0;exitDy=0;fillColor=#000000;" parent="1" source="Etablissement" target="EquipementEtablissement" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1150" y="800" as="sourcePoint" />
+            <mxPoint x="1100" y="950" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel6_label" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1170" y="700" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel6_label2" value="0..1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="920" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel7" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fillColor=#000000;" parent="1" source="Etablissement" target="Effectif" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1400" y="850" as="sourcePoint" />
+            <mxPoint x="1350" y="900" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel7_label" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1430" y="790" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel7_label2" value="0..1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="920" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel8" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;exitX=1;exitY=1;exitDx=0;exitDy=0;fillColor=#000000;" parent="1" source="Etablissement" target="Infrastructure" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1650" y="900" as="sourcePoint" />
+            <mxPoint x="1700" y="1250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel8_label" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1620" y="780" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rel8_label2" value="0..1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="1130" width="30" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
