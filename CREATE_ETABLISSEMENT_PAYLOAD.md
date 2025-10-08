@@ -4,8 +4,8 @@
 
 1. **Authentification requise** : L'utilisateur doit être authentifié en tant qu'admin
 2. **Calculs automatiques** : Si `tot` ou `total_ense` ne sont pas fournis, ils sont calculés automatiquement :
-   - `tot` = `sommedenb_eff_g` + `sommedenb_eff_f`
-   - `total_ense` = `sommedenb_ens_h` + `sommedenb_ens_f`
+    - `tot` = `sommedenb_eff_g` + `sommedenb_eff_f`
+    - `total_ense` = `sommedenb_ens_h` + `sommedenb_ens_f`
 3. **Création automatique des enregistrements liés** : Si vous fournissez des données d'effectifs, d'équipements ou d'infrastructures, les enregistrements correspondants seront automatiquement créés dans les tables `effectifs`, `equipements_etablissement` et `infrastructures`
 4. **Mapping automatique** : Les libellés (`libelle_type_milieu`, etc.) sont automatiquement convertis en IDs de base de données
 5. **Unicité** : `code_etablissement` doit être unique dans toute la base de données
