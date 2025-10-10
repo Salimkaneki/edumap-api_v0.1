@@ -70,6 +70,9 @@ Route::prefix('admin')->group(function () {
             // Import/Export (admin uniquement)
             Route::post('/import', [EtablissementController::class, 'import']);
             Route::get('/export', [EtablissementController::class, 'export']);
+
+                        // Suppression d'établissements
+            Route::delete('/{id}', [EtablissementController::class, 'destroy']);
         });
         
         // Routes SuperAdmin uniquement
@@ -77,9 +80,11 @@ Route::prefix('admin')->group(function () {
             // Gestion des administrateurs
             Route::get('/admins', [AdminAuthController::class, 'admins']);
             Route::post('/admins', [AdminAuthController::class, 'createAdmin']);
+            Route::put('/admins/{id}', [AdminAuthController::class, 'updateAdmin']);
+            Route::patch('/admins/{id}', [AdminAuthController::class, 'updateAdmin']);
+            Route::delete('/admins/{id}', [AdminAuthController::class, 'deleteAdmin']);
             
-            // Suppression d'établissements (superadmin uniquement)
-            Route::delete('/etablissements/{id}', [EtablissementController::class, 'destroy']);
+
             
             // Statistiques détaillées admin
             Route::get('/etablissements/stats/detailed', [EtablissementController::class, 'detailedStats']);
@@ -117,7 +122,11 @@ Route::get('/info', function () {
             ],
             'admin' => [
                 'POST /api/admin/login' => 'Connexion admin',
-                'All CRUD operations on /api/admin/etablissements/*' => 'Gestion complète'
+                'GET /api/admin/admins' => 'Liste des administrateurs (superadmin)',
+                'POST /api/admin/admins' => 'Créer un administrateur (superadmin)',
+                'PUT /api/admin/admins/{id}' => 'Modifier un administrateur (superadmin)',
+                'DELETE /api/admin/admins/{id}' => 'Supprimer un administrateur (superadmin)',
+                'All CRUD operations on /api/admin/etablissements/*' => 'Gestion complète des établissements'
             ]
         ]
     ]);

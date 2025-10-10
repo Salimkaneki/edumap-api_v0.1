@@ -120,4 +120,73 @@ class AdminAuthController extends Controller
             ]
         ]);
     }
+
+    public function updateAdmin(Request $request, $id)
+    {
+        $admin = Admin::findOrFail($id);
+
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:admins,email,' . $id,
+            'password' => 'sometimes|min:8',
+            'role' => 'sometimes|in:admin,superadmin',
+        ]);
+
+        $updateData = [];
+
+        if ($request->has('name')) {
+            $updateData['name'] = $request->name;
+        }
+
+        if ($request->has('email')) {
+            $updateData['email'] = $request->email;
+        }
+
+        if ($request->has('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        if ($request->has('role')) {
+            $updateData['role'] = $request->role;
+        }
+
+        $admin->update($updateData);
+
+        return response()->json([
+            'message' => 'Admin updated successfully',
+            'admin' => [
+                'id' => $admin->id,
+                'name' => $admin->name,
+                'email' => $admin->email,
+                'role' => $admin->role
+            ]
+        ]);
+    }
+
+    public function deleteAdmin(Request $request, $id)
+    {
+        $currentAdmin = $request->user();
+
+        // Empêcher la suppression de soi-même
+        if ($currentAdmin->id == $id) {
+            return response()->json([
+                'error' => 'Vous ne pouvez pas supprimer votre propre compte'
+            ], 403);
+        }
+
+        $admin = Admin::findOrFail($id);
+
+        // Empêcher la suppression du dernier superadmin
+        if ($admin->role === 'superadmin' && Admin::where('role', 'superadmin')->count() <= 1) {
+            return response()->json([
+                'error' => 'Impossible de supprimer le dernier super administrateur'
+            ], 403);
+        }
+
+        $admin->delete();
+
+        return response()->json([
+            'message' => 'Admin deleted successfully'
+        ]);
+    }
 }
