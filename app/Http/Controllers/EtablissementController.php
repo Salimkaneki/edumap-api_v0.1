@@ -953,13 +953,33 @@ class EtablissementController extends Controller
             }
 
             $file = $request->file('file');
+            
+            // Créer le dossier imports s'il n'existe pas
+            $importDir = storage_path('app/imports');
+            if (!file_exists($importDir)) {
+                mkdir($importDir, 0755, true);
+            }
+            
             $fileName = time() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs('imports', $fileName, 'local');
+            $fullPath = storage_path('app/' . $filePath);
 
-            Log::info("Fichier uploadé:", ['path' => $filePath]);
+            Log::info("Fichier uploadé:", [
+                'relative_path' => $filePath,
+                'full_path' => $fullPath,
+                'file_exists' => file_exists($fullPath)
+            ]);
 
-            // Lire le fichier Excel
-            $data = Excel::toArray([], storage_path('app/' . $filePath));
+            // Vérifier que le fichier existe
+            if (!file_exists($fullPath)) {
+                return response()->json([
+                    'error' => 'Le fichier n\'a pas pu être sauvegardé',
+                    'path' => $fullPath
+                ], 500);
+            }
+
+            // Lire le fichier Excel avec le chemin complet
+            $data = Excel::toArray([], $fullPath);
             
             if (empty($data) || empty($data[0])) {
                 return response()->json([
@@ -1103,7 +1123,9 @@ class EtablissementController extends Controller
             DB::commit();
 
             // Supprimer le fichier temporaire
-            unlink(storage_path('app/' . $filePath));
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
+            }
 
             // Vider le cache
             Cache::flush();

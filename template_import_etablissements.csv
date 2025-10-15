@@ -1,0 +1,11 @@
+Code_etab,Nom_etab,Region,Prefecture,Canton_ou_village_autonome,Ville_village_quartier,Commune_etab,Latitude,Longitude,Libelle_type_milieu,Libelle_type_statut_etab,Libelle_type_systeme,Libelle_type_annee,Existe_elect,Existe_latrine,Existe_latrine_fonct,Acces_toute_saison,Eau,SommedenbEffG,SommedenbEffF,Tot,SommedenbEnsH,SommedenbEnsF,TotalEnse,SommedenbSallesClassesDur,SommedenbSallesClassesBanco,SommedenbSallesClassesAutre
+LOME001,EPP Centre Lomé,MARITIME,Golfe,Lomé Commune 1,Nyékonakpoè,Lomé,6.1319,1.2228,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,245,238,483,8,6,14,10,2,0
+KARA001,Collège Moderne de Kara,KARA,Kozah,Kara,Centre-ville,Kara,9.5509,1.1861,Urbain,Public,SECONDAIRE I,2023-2024,oui,oui,oui,oui,oui,356,312,668,15,12,27,18,0,1
+SAV001,EPP Sarakawa,KARA,Kozah,Sarakawa,Sarakawa Centre,Sarakawa,9.5123,1.2104,Rural,Public,PRIMAIRE,2023-2024,non,oui,oui,non,non,98,102,200,4,3,7,4,3,1
+SOKO001,École Catholique Sokodé,CENTRALE,Tchaoudjo,Sokodé,Quartier Komah,Sokodé,8.9833,1.1333,Urbain,Privé Catholique,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,178,165,343,7,5,12,8,1,0
+ATAL001,EPP Atakpamé Centre,PLATEAUX,Ogou,Atakpamé,Centre-ville,Atakpamé,7.5333,1.1167,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,312,295,607,10,9,19,12,2,0
+BASA001,Collège Protestant de Bassar,KARA,Bassar,Bassar,Bassar Centre,Bassar,9.2500,0.7833,Semi Urbain,Privé Protestant,SECONDAIRE I,2023-2024,oui,oui,oui,oui,non,289,267,556,14,11,25,15,1,0
+DAPA001,EPP Dapaong,SAVANES,Tône,Dapaong,Quartier Peulh,Dapaong,10.8667,0.2000,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,non,oui,oui,267,245,512,9,7,16,11,3,0
+MANG001,Lycée Moderne de Mango,SAVANES,Oti,Mango,Centre-ville,Mango,10.3667,0.4667,Urbain,Public,SECONDAIRE II,2023-2024,oui,oui,oui,oui,oui,423,378,801,22,18,40,20,0,2
+KPAL001,EPP Kpalimé,PLATEAUX,Kloto,Kpalimé,Kpadapé,Kpalimé,6.9000,0.6333,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,334,321,655,11,10,21,13,2,1
+TABA001,École Communautaire Tabligbo,MARITIME,Yoto,Tabligbo,Quartier Amoussimé,Tabligbo,6.5833,1.5167,Semi Urbain,Communautaire,PRIMAIRE,2023-2024,non,oui,non,non,non,145,138,283,5,4,9,3,5,2
