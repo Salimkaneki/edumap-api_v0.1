@@ -958,23 +958,38 @@ class EtablissementController extends Controller
             $importDir = storage_path('app/imports');
             if (!file_exists($importDir)) {
                 mkdir($importDir, 0755, true);
+                chmod($importDir, 0755);
             }
             
             $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('imports', $fileName, 'local');
-            $fullPath = storage_path('app/' . $filePath);
+            
+            // Sauvegarder directement avec move au lieu de storeAs
+            $fullPath = $importDir . '/' . $fileName;
+            $file->move($importDir, $fileName);
 
             Log::info("Fichier uploadé:", [
-                'relative_path' => $filePath,
+                'filename' => $fileName,
                 'full_path' => $fullPath,
-                'file_exists' => file_exists($fullPath)
+                'file_exists' => file_exists($fullPath),
+                'file_size' => file_exists($fullPath) ? filesize($fullPath) : 0,
+                'is_readable' => file_exists($fullPath) ? is_readable($fullPath) : false
             ]);
 
-            // Vérifier que le fichier existe
+            // Vérifier que le fichier existe et est lisible
             if (!file_exists($fullPath)) {
                 return response()->json([
                     'error' => 'Le fichier n\'a pas pu être sauvegardé',
-                    'path' => $fullPath
+                    'path' => $fullPath,
+                    'directory_exists' => file_exists($importDir),
+                    'directory_writable' => is_writable($importDir)
+                ], 500);
+            }
+
+            if (!is_readable($fullPath)) {
+                return response()->json([
+                    'error' => 'Le fichier n\'est pas lisible',
+                    'path' => $fullPath,
+                    'permissions' => substr(sprintf('%o', fileperms($fullPath)), -4)
                 ], 500);
             }
 
