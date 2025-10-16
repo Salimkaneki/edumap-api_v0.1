@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EtablissementController extends Controller
 {
@@ -1176,27 +1177,134 @@ class EtablissementController extends Controller
         }
     }
 
-    // Exporter les établissements vers Excel
+    // Exporter les établissements
     public function export(Request $request)
     {
         try {
             $admin = $request->user();
-            Log::info("Admin export établissements:", [
-                'admin_id' => $admin->id,
-                'admin_name' => $admin->name
+            
+            // Valider le format d'export
+            $validator = Validator::make($request->all(), [
+                'format' => 'required|in:excel,csv,pdf',
+                'region' => 'nullable|string',
+                'prefecture' => 'nullable|string',
+                'libelle_type_milieu' => 'nullable|string',
+                'libelle_type_statut_etab' => 'nullable|string',
+                'libelle_type_systeme' => 'nullable|string',
             ]);
 
-            // Pour l'instant, retourner un message indiquant que l'export sera implémenté
-            return response()->json([
-                'message' => 'Fonctionnalité d\'export en cours de développement'
-            ], 501);
+            if ($validator->fails()) {
+                return response()->json([
+                    'error' => 'Paramètres invalides',
+                    'details' => $validator->errors()
+                ], 422);
+            }
+
+            $format = $request->format;
+            $filters = $request->only(['region', 'prefecture', 'libelle_type_milieu', 'libelle_type_statut_etab', 'libelle_type_systeme']);
+            
+            Log::info("Admin export établissements:", [
+                'admin_id' => $admin->id,
+                'admin_name' => $admin->name,
+                'format' => $format,
+                'filters' => $filters
+            ]);
+
+            $fileName = 'etablissements_' . date('Y-m-d_His');
+
+            switch ($format) {
+                case 'excel':
+                    return Excel::download(
+                        new \App\Exports\EtablissementsExport($filters),
+                        $fileName . '.xlsx',
+                        \Maatwebsite\Excel\Excel::XLSX
+                    );
+
+                case 'csv':
+                    return Excel::download(
+                        new \App\Exports\EtablissementsExport($filters),
+                        $fileName . '.csv',
+                        \Maatwebsite\Excel\Excel::CSV,
+                        [
+                            'Content-Type' => 'text/csv',
+                        ]
+                    );
+
+                case 'pdf':
+                    return $this->exportPdf($filters, $fileName);
+
+                default:
+                    return response()->json([
+                        'error' => 'Format non supporté'
+                    ], 400);
+            }
 
         } catch (\Exception $e) {
-            Log::error("Erreur lors de l'export: " . $e->getMessage());
+            Log::error("Erreur lors de l'export: " . $e->getMessage(), [
+                'exception' => $e->getTraceAsString()
+            ]);
             
             return response()->json([
-                'error' => 'Une erreur est survenue lors de l\'export'
+                'error' => 'Une erreur est survenue lors de l\'export',
+                'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    // Exporter en PDF
+    private function exportPdf($filters, $fileName)
+    {
+        $query = Etablissement::with(['localisation', 'milieu', 'statut', 'systeme', 'annee', 'effectif', 'equipement', 'infrastructure']);
+
+        // Appliquer les filtres
+        if (!empty($filters['region'])) {
+            $query->where('region', $filters['region']);
+        }
+
+        if (!empty($filters['prefecture'])) {
+            $query->where('prefecture', $filters['prefecture']);
+        }
+
+        if (!empty($filters['libelle_type_milieu'])) {
+            $query->where('libelle_type_milieu', $filters['libelle_type_milieu']);
+        }
+
+        if (!empty($filters['libelle_type_statut_etab'])) {
+            $query->where('libelle_type_statut_etab', $filters['libelle_type_statut_etab']);
+        }
+
+        if (!empty($filters['libelle_type_systeme'])) {
+            $query->where('libelle_type_systeme', $filters['libelle_type_systeme']);
+        }
+
+        $etablissements = $query->get();
+
+        // Préparer les statistiques
+        $stats = [
+            'total' => $etablissements->count(),
+            'total_eleves' => $etablissements->sum(function($e) {
+                return $e->effectif->tot ?? $e->tot ?? 0;
+            }),
+            'total_enseignants' => $etablissements->sum(function($e) {
+                return $e->effectif->total_ense ?? $e->total_ense ?? 0;
+            }),
+            'avec_electricite' => $etablissements->filter(function($e) {
+                return ($e->equipement->existe_elect ?? $e->existe_elect) == true;
+            })->count(),
+            'avec_eau' => $etablissements->filter(function($e) {
+                return ($e->equipement->eau ?? $e->eau) == true;
+            })->count(),
+        ];
+
+        $pdf = Pdf::loadView('exports.etablissements-pdf', [
+            'etablissements' => $etablissements,
+            'stats' => $stats,
+            'filters' => $filters,
+            'date' => now()->format('d/m/Y H:i'),
+        ]);
+
+        $pdf->setPaper('a4', 'landscape');
+
+        return $pdf->download($fileName . '.pdf');
     }
 }

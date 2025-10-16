@@ -1,11 +1,41 @@
 Code_etab,Nom_etab,Region,Prefecture,Canton_ou_village_autonome,Ville_village_quartier,Commune_etab,Latitude,Longitude,Libelle_type_milieu,Libelle_type_statut_etab,Libelle_type_systeme,Libelle_type_annee,Existe_elect,Existe_latrine,Existe_latrine_fonct,Acces_toute_saison,Eau,SommedenbEffG,SommedenbEffF,Tot,SommedenbEnsH,SommedenbEnsF,TotalEnse,SommedenbSallesClassesDur,SommedenbSallesClassesBanco,SommedenbSallesClassesAutre
 LOME001,EPP Centre Lomé,MARITIME,Golfe,Lomé Commune 1,Nyékonakpoè,Lomé,6.1319,1.2228,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,245,238,483,8,6,14,10,2,0
+LOME002,Collège d'Enseignement Général de Bè,MARITIME,Golfe,Lomé Commune 2,Bè-Klikamé,Lomé,6.1256,1.2345,Urbain,Public,SECONDAIRE I,2023-2024,oui,oui,oui,oui,oui,412,389,801,19,16,35,16,3,1
+LOME003,École Maternelle Les Coccinelles,MARITIME,Golfe,Lomé Commune 3,Tokoin,Lomé,6.1405,1.2489,Urbain,Privé Laïc,PRESCOLAIRE,2023-2024,oui,oui,oui,oui,oui,78,82,160,3,7,10,6,0,0
+LOME004,Lycée de Tokoin,MARITIME,Golfe,Lomé Commune 4,Tokoin-Hôpital,Lomé,6.1467,1.2534,Urbain,Public,SECONDAIRE II,2023-2024,oui,oui,oui,oui,oui,567,534,1101,28,24,52,24,1,2
+AFAG001,EPP Aného,MARITIME,Lacs,Aného,Centre Aného,Aného,6.2333,1.6000,Semi Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,non,198,204,402,8,6,14,9,4,1
+VOGA001,Collège de Vogan,MARITIME,Vo,Vogan,Vogan Centre,Vogan,6.3333,1.5333,Semi Urbain,Public,SECONDAIRE I,2023-2024,oui,oui,non,oui,oui,234,221,455,12,9,21,12,2,0
+TSEV001,EPP Tsévié Centre,MARITIME,Zio,Tsévié,Tsévié Centre,Tsévié,6.4333,1.2167,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,289,276,565,11,8,19,11,2,0
 KARA001,Collège Moderne de Kara,KARA,Kozah,Kara,Centre-ville,Kara,9.5509,1.1861,Urbain,Public,SECONDAIRE I,2023-2024,oui,oui,oui,oui,oui,356,312,668,15,12,27,18,0,1
+KARA002,EPP Kara Plateau,KARA,Kozah,Kara,Plateau,Kara,9.5567,1.1923,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,278,265,543,10,8,18,12,1,0
+KARA003,École Islamique Al-Iman,KARA,Kozah,Kara,Tomdè,Kara,9.5456,1.1789,Urbain,Privé Islamique,PRIMAIRE,2023-2024,oui,oui,oui,oui,non,156,148,304,6,5,11,7,2,1
 SAV001,EPP Sarakawa,KARA,Kozah,Sarakawa,Sarakawa Centre,Sarakawa,9.5123,1.2104,Rural,Public,PRIMAIRE,2023-2024,non,oui,oui,non,non,98,102,200,4,3,7,4,3,1
-SOKO001,École Catholique Sokodé,CENTRALE,Tchaoudjo,Sokodé,Quartier Komah,Sokodé,8.9833,1.1333,Urbain,Privé Catholique,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,178,165,343,7,5,12,8,1,0
-ATAL001,EPP Atakpamé Centre,PLATEAUX,Ogou,Atakpamé,Centre-ville,Atakpamé,7.5333,1.1167,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,312,295,607,10,9,19,12,2,0
 BASA001,Collège Protestant de Bassar,KARA,Bassar,Bassar,Bassar Centre,Bassar,9.2500,0.7833,Semi Urbain,Privé Protestant,SECONDAIRE I,2023-2024,oui,oui,oui,oui,non,289,267,556,14,11,25,15,1,0
-DAPA001,EPP Dapaong,SAVANES,Tône,Dapaong,Quartier Peulh,Dapaong,10.8667,0.2000,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,non,oui,oui,267,245,512,9,7,16,11,3,0
-MANG001,Lycée Moderne de Mango,SAVANES,Oti,Mango,Centre-ville,Mango,10.3667,0.4667,Urbain,Public,SECONDAIRE II,2023-2024,oui,oui,oui,oui,oui,423,378,801,22,18,40,20,0,2
+BASA002,EPP Bassar Katchamba,KARA,Bassar,Bassar,Katchamba,Bassar,9.2456,0.7789,Rural,Public,PRIMAIRE,2023-2024,non,oui,non,non,non,112,108,220,5,4,9,3,4,2
+NIAM001,EPP Niamtougou,KARA,Doufelgou,Niamtougou,Niamtougou Centre,Niamtougou,9.7667,1.0833,Semi Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,167,173,340,7,6,13,8,2,1
+KAND001,Collège de Kandé,KARA,Kéran,Kandé,Kandé Centre,Kandé,9.9667,1.0333,Semi Urbain,Public,SECONDAIRE I,2023-2024,oui,oui,oui,non,oui,245,228,473,13,10,23,14,3,0
+SOKO001,École Catholique Sokodé,CENTRALE,Tchaoudjo,Sokodé,Quartier Komah,Sokodé,8.9833,1.1333,Urbain,Privé Catholique,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,178,165,343,7,5,12,8,1,0
+SOKO002,Lycée de Sokodé,CENTRALE,Tchaoudjo,Sokodé,Tchitchao,Sokodé,8.9789,1.1289,Urbain,Public,SECONDAIRE II,2023-2024,oui,oui,oui,oui,oui,489,456,945,24,21,45,22,2,1
+SOKO003,EPP Sokodé Nord,CENTRALE,Tchaoudjo,Sokodé,Didaouré,Sokodé,8.9912,1.1401,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,312,298,610,12,9,21,13,2,0
+TCHA001,EPP Tchamba,CENTRALE,Tchamba,Tchamba,Tchamba Centre,Tchamba,9.0333,1.4167,Semi Urbain,Public,PRIMAIRE,2023-2024,oui,oui,non,oui,non,134,142,276,6,5,11,6,3,2
+SOTO001,Collège de Sotouboua,CENTRALE,Sotouboua,Sotouboua,Sotouboua Centre,Sotouboua,8.5667,0.9833,Semi Urbain,Public,SECONDAIRE I,2023-2024,oui,oui,oui,oui,oui,201,189,390,11,8,19,11,2,1
+BLIT001,EPP Blitta,CENTRALE,Blitta,Blitta,Blitta Centre,Blitta,8.3167,0.9833,Rural,Public,PRIMAIRE,2023-2024,non,oui,non,non,non,89,95,184,4,3,7,2,4,1
+ATAL001,EPP Atakpamé Centre,PLATEAUX,Ogou,Atakpamé,Centre-ville,Atakpamé,7.5333,1.1167,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,312,295,607,10,9,19,12,2,0
+ATAL002,Lycée d'Atakpamé,PLATEAUX,Ogou,Atakpamé,Quartier Administratif,Atakpamé,7.5289,1.1234,Urbain,Public,SECONDAIRE II,2023-2024,oui,oui,oui,oui,oui,523,489,1012,26,22,48,23,1,2
+ATAL003,Collège Catholique Saint Joseph,PLATEAUX,Ogou,Atakpamé,Adéta,Atakpamé,7.5401,1.1089,Urbain,Privé Catholique,SECONDAIRE I,2023-2024,oui,oui,oui,oui,oui,267,245,512,14,12,26,14,1,0
 KPAL001,EPP Kpalimé,PLATEAUX,Kloto,Kpalimé,Kpadapé,Kpalimé,6.9000,0.6333,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,334,321,655,11,10,21,13,2,1
+KPAL002,Lycée de Kpalimé,PLATEAUX,Kloto,Kpalimé,Centre-ville,Kpalimé,6.9056,0.6289,Urbain,Public,SECONDAIRE II,2023-2024,oui,oui,oui,oui,oui,478,445,923,23,20,43,21,1,1
+KPAL003,École Adventiste de Kpalimé,PLATEAUX,Kloto,Kpalimé,Agomé-Kponou,Kpalimé,6.8945,0.6401,Semi Urbain,Privé Protestant,PRIMAIRE,2023-2024,oui,oui,oui,oui,non,123,118,241,6,5,11,7,1,0
+NOTA001,Collège de Notse,PLATEAUX,Haho,Notse,Notse Centre,Notse,6.9500,1.1667,Urbain,Public,SECONDAIRE I,2023-2024,oui,oui,oui,oui,oui,298,276,574,15,11,26,15,2,0
+ANEH001,EPP Anécho,PLATEAUX,Anié,Anécho,Anécho Centre,Anécho,7.7500,1.6000,Semi Urbain,Public,PRIMAIRE,2023-2024,oui,oui,non,oui,non,156,162,318,7,5,12,7,3,1
+DAPA001,EPP Dapaong,SAVANES,Tône,Dapaong,Quartier Peulh,Dapaong,10.8667,0.2000,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,non,oui,oui,267,245,512,9,7,16,11,3,0
+DAPA002,Lycée de Dapaong,SAVANES,Tône,Dapaong,Centre-ville,Dapaong,10.8623,0.2045,Urbain,Public,SECONDAIRE II,2023-2024,oui,oui,oui,oui,oui,445,412,857,22,19,41,20,1,2
+DAPA003,Collège Moderne de Dapaong,SAVANES,Tône,Dapaong,Namoni,Dapaong,10.8712,0.1956,Urbain,Public,SECONDAIRE I,2023-2024,oui,oui,oui,oui,oui,334,312,646,16,13,29,17,2,0
+MANG001,Lycée Moderne de Mango,SAVANES,Oti,Mango,Centre-ville,Mango,10.3667,0.4667,Urbain,Public,SECONDAIRE II,2023-2024,oui,oui,oui,oui,oui,423,378,801,22,18,40,20,0,2
+MANG002,EPP Mango,SAVANES,Oti,Mango,Kolondy,Mango,10.3623,0.4712,Urbain,Public,PRIMAIRE,2023-2024,oui,oui,oui,oui,oui,234,221,455,9,7,16,11,2,0
+TANG001,Collège de Tandjouaré,SAVANES,Kpendjal,Tandjouaré,Tandjouaré Centre,Tandjouaré,10.7667,0.3833,Rural,Public,SECONDAIRE I,2023-2024,non,oui,non,non,non,178,165,343,10,7,17,8,4,2
+NAKI001,EPP Naboulgou,SAVANES,Kpendjal,Naboulgou,Naboulgou Centre,Naboulgou,10.6500,0.4500,Rural,Public,PRIMAIRE,2023-2024,non,oui,non,non,non,102,98,200,5,3,8,3,3,2
 TABA001,École Communautaire Tabligbo,MARITIME,Yoto,Tabligbo,Quartier Amoussimé,Tabligbo,6.5833,1.5167,Semi Urbain,Communautaire,PRIMAIRE,2023-2024,non,oui,non,non,non,145,138,283,5,4,9,3,5,2
+CINK001,EPP Cinkassé,SAVANES,Tône,Cinkassé,Cinkassé Centre,Cinkassé,11.1167,0.0333,Rural,Public,PRIMAIRE,2023-2024,non,oui,oui,non,non,87,93,180,4,3,7,2,3,1
+KPAR001,EPP Kparatao,KARA,Binah,Kparatao,Kparatao Centre,Kparatao,9.3833,0.9500,Rural,Public,PRIMAIRE,2023-2024,non,oui,non,non,non,76,82,158,4,2,6,2,2,2
+GUED001,Collège de Guérin-Kouka,KARA,Binah,Guérin-Kouka,Guérin-Kouka Centre,Guérin-Kouka,9.3500,0.9000,Rural,Public,SECONDAIRE I,2023-2024,non,oui,non,non,non,123,115,238,8,5,13,6,3,1
