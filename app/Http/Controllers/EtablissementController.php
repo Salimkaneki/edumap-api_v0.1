@@ -1260,9 +1260,8 @@ class EtablissementController extends Controller
         $query = Etablissement::query()
             ->select([
                 'etablissements.id',
-                'etablissements.id_etab',
-                'etablissements.code_etab',
-                'etablissements.nom_etab',
+                'etablissements.code_etablissement',
+                'etablissements.nom_etablissement',
                 'etablissements.region',
                 'etablissements.prefecture',
                 'etablissements.libelle_type_milieu',
