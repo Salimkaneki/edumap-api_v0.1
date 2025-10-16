@@ -1256,22 +1256,8 @@ class EtablissementController extends Controller
     // Exporter en PDF
     private function exportPdf($filters, $fileName)
     {
-        // Optimiser la requête avec JOIN au lieu de with() pour réduire la mémoire
-        $query = Etablissement::query()
-            ->select([
-                'etablissements.id',
-                'etablissements.code_etablissement',
-                'etablissements.nom_etablissement',
-                'localisations.region',
-                'localisations.prefecture',
-                'milieux.libelle_type_milieu',
-                'statuts.libelle_type_statut_etab',
-                'systemes.libelle_type_systeme',
-                'effectifs.tot as total_eleves',
-                'effectifs.total_ense as total_enseignants',
-                'equipements_etablissement.existe_elect',
-                'equipements_etablissement.eau'
-            ])
+        // Calculer d'abord les statistiques avec des requêtes agrégées (très rapide)
+        $statsQuery = Etablissement::query()
             ->leftJoin('localisations', 'etablissements.localisation_id', '=', 'localisations.id')
             ->leftJoin('milieux', 'etablissements.milieu_id', '=', 'milieux.id')
             ->leftJoin('statuts', 'etablissements.statut_id', '=', 'statuts.id')
@@ -1279,47 +1265,76 @@ class EtablissementController extends Controller
             ->leftJoin('effectifs', 'etablissements.id', '=', 'effectifs.etablissement_id')
             ->leftJoin('equipements_etablissement', 'etablissements.id', '=', 'equipements_etablissement.etablissement_id');
 
-        // Appliquer les filtres sur les tables jointes
+        // Appliquer les filtres
+        if (!empty($filters['region'])) {
+            $statsQuery->where('localisations.region', $filters['region']);
+        }
+        if (!empty($filters['prefecture'])) {
+            $statsQuery->where('localisations.prefecture', $filters['prefecture']);
+        }
+        if (!empty($filters['libelle_type_milieu'])) {
+            $statsQuery->where('milieux.libelle_type_milieu', $filters['libelle_type_milieu']);
+        }
+        if (!empty($filters['libelle_type_statut_etab'])) {
+            $statsQuery->where('statuts.libelle_type_statut_etab', $filters['libelle_type_statut_etab']);
+        }
+        if (!empty($filters['libelle_type_systeme'])) {
+            $statsQuery->where('systemes.libelle_type_systeme', $filters['libelle_type_systeme']);
+        }
+
+        // Statistiques agrégées (pas de chargement de données)
+        $stats = [
+            'total' => (clone $statsQuery)->count('etablissements.id'),
+            'total_eleves' => (clone $statsQuery)->sum('effectifs.tot') ?? 0,
+            'total_enseignants' => (clone $statsQuery)->sum('effectifs.total_ense') ?? 0,
+            'avec_electricite' => (clone $statsQuery)->where('equipements_etablissement.existe_elect', true)->count() ?? 0,
+            'avec_eau' => (clone $statsQuery)->where('equipements_etablissement.eau', true)->count() ?? 0,
+        ];
+
+        // Charger SEULEMENT 100 établissements pour le PDF (pour éviter out of memory)
+        $query = Etablissement::query()
+            ->select([
+                'etablissements.code_etablissement',
+                'etablissements.nom_etablissement',
+                'localisations.region',
+                'localisations.prefecture',
+                'milieux.libelle_type_milieu',
+                'statuts.libelle_type_statut_etab',
+            ])
+            ->leftJoin('localisations', 'etablissements.localisation_id', '=', 'localisations.id')
+            ->leftJoin('milieux', 'etablissements.milieu_id', '=', 'milieux.id')
+            ->leftJoin('statuts', 'etablissements.statut_id', '=', 'statuts.id');
+
+        // Appliquer les mêmes filtres
         if (!empty($filters['region'])) {
             $query->where('localisations.region', $filters['region']);
         }
-
         if (!empty($filters['prefecture'])) {
             $query->where('localisations.prefecture', $filters['prefecture']);
         }
-
         if (!empty($filters['libelle_type_milieu'])) {
             $query->where('milieux.libelle_type_milieu', $filters['libelle_type_milieu']);
         }
-
         if (!empty($filters['libelle_type_statut_etab'])) {
             $query->where('statuts.libelle_type_statut_etab', $filters['libelle_type_statut_etab']);
         }
-
         if (!empty($filters['libelle_type_systeme'])) {
-            $query->where('systemes.libelle_type_systeme', $filters['libelle_type_systeme']);
+            $query->leftJoin('systemes', 'etablissements.systeme_id', '=', 'systemes.id')
+                  ->where('systemes.libelle_type_systeme', $filters['libelle_type_systeme']);
         }
 
-        // Limiter le nombre de résultats pour le PDF
-        $etablissements = $query->limit(1000)->get();
-
-        // Calculer les statistiques avec les données déjà chargées
-        $stats = [
-            'total' => $etablissements->count(),
-            'total_eleves' => $etablissements->sum('total_eleves'),
-            'total_enseignants' => $etablissements->sum('total_enseignants'),
-            'avec_electricite' => $etablissements->filter(fn($e) => $e->existe_elect)->count(),
-            'avec_eau' => $etablissements->filter(fn($e) => $e->eau)->count(),
-        ];
+        // LIMITE STRICTE : 100 établissements maximum
+        $etablissements = $query->limit(100)->get();
 
         $pdf = Pdf::loadView('exports.etablissements-pdf', [
             'etablissements' => $etablissements,
             'stats' => $stats,
             'filters' => $filters,
             'date' => now()->format('d/m/Y H:i'),
-        ]);
-
-        $pdf->setPaper('a4', 'landscape');
+            'is_limited' => $stats['total'] > 100,
+        ])->setPaper('a4', 'landscape')
+          ->setOption('isHtml5ParserEnabled', true)
+          ->setOption('isRemoteEnabled', false);
 
         return $pdf->download($fileName . '.pdf');
     }

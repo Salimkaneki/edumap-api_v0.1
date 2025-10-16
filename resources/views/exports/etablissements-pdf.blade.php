@@ -217,54 +217,32 @@
         </div>
     </div>
 
+    @if(isset($is_limited) && $is_limited)
+    <div class="filters" style="background-color: #fff3cd; border-left-color: #ffc107;">
+        <p style="color: #856404; font-weight: bold;">⚠️ Attention : Ce PDF affiche les 100 premiers établissements sur {{ $stats['total'] }} au total. Pour exporter toutes les données, utilisez le format Excel ou CSV.</p>
+    </div>
+    @endif
+
     <table>
         <thead>
             <tr>
-                <th style="width: 8%;">Code</th>
-                <th style="width: 20%;">Nom</th>
-                <th style="width: 10%;">Région</th>
-                <th style="width: 10%;">Préfecture</th>
-                <th style="width: 8%;">Milieu</th>
-                <th style="width: 10%;">Statut</th>
-                <th style="width: 10%;">Système</th>
-                <th style="width: 6%;">Élèves</th>
-                <th style="width: 6%;">Ens.</th>
-                <th style="width: 6%;">Équip.</th>
-                <th style="width: 6%;">Infra.</th>
+                <th style="width: 12%;">Code</th>
+                <th style="width: 28%;">Nom</th>
+                <th style="width: 15%;">Région</th>
+                <th style="width: 15%;">Préfecture</th>
+                <th style="width: 15%;">Milieu</th>
+                <th style="width: 15%;">Statut</th>
             </tr>
         </thead>
         <tbody>
             @foreach($etablissements as $etab)
             <tr>
-                <td>{{ $etab->code_etablissement }}</td>
-                <td>{{ $etab->nom_etablissement }}</td>
-                <td>{{ $etab->localisation->region ?? $etab->region ?? 'N/A' }}</td>
-                <td>{{ $etab->localisation->prefecture ?? $etab->prefecture ?? 'N/A' }}</td>
-                <td>{{ $etab->milieu->libelle_type_milieu ?? $etab->libelle_type_milieu ?? 'N/A' }}</td>
-                <td style="font-size: 7px;">{{ $etab->statut->libelle_type_statut_etab ?? $etab->libelle_type_statut_etab ?? 'N/A' }}</td>
-                <td style="font-size: 7px;">{{ $etab->systeme->libelle_type_systeme ?? $etab->libelle_type_systeme ?? 'N/A' }}</td>
-                <td class="text-center">{{ $etab->effectif->tot ?? $etab->tot ?? 0 }}</td>
-                <td class="text-center">{{ $etab->effectif->total_ense ?? $etab->total_ense ?? 0 }}</td>
-                <td class="text-center">
-                    @php
-                        $hasEquip = ($etab->equipement->existe_elect ?? $etab->existe_elect) || 
-                                    ($etab->equipement->existe_latrine ?? $etab->existe_latrine) || 
-                                    ($etab->equipement->eau ?? $etab->eau);
-                    @endphp
-                    @if($hasEquip)
-                        <span class="badge badge-success">Oui</span>
-                    @else
-                        <span class="badge badge-danger">Non</span>
-                    @endif
-                </td>
-                <td class="text-center">
-                    @php
-                        $totalSalles = ($etab->infrastructure->sommedenb_salles_classes_dur ?? $etab->sommedenb_salles_classes_dur ?? 0) +
-                                      ($etab->infrastructure->sommedenb_salles_classes_banco ?? $etab->sommedenb_salles_classes_banco ?? 0) +
-                                      ($etab->infrastructure->sommedenb_salles_classes_autre ?? $etab->sommedenb_salles_classes_autre ?? 0);
-                    @endphp
-                    {{ $totalSalles }}
-                </td>
+                <td>{{ $etab->code_etablissement ?? 'N/A' }}</td>
+                <td>{{ $etab->nom_etablissement ?? 'N/A' }}</td>
+                <td>{{ $etab->region ?? 'N/A' }}</td>
+                <td>{{ $etab->prefecture ?? 'N/A' }}</td>
+                <td>{{ $etab->libelle_type_milieu ?? 'N/A' }}</td>
+                <td style="font-size: 7px;">{{ $etab->libelle_type_statut_etab ?? 'N/A' }}</td>
             </tr>
             @endforeach
         </tbody>
