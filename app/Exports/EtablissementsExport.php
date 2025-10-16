@@ -27,7 +27,11 @@ class EtablissementsExport implements FromQuery, WithHeadings, WithMapping, With
     {
         $query = Etablissement::query()
             ->select([
-                'etablissements.*',
+                'etablissements.id',
+                'etablissements.code_etablissement',
+                'etablissements.nom_etablissement',
+                'etablissements.latitude',
+                'etablissements.longitude',
                 'localisations.region as loc_region',
                 'localisations.prefecture as loc_prefecture',
                 'localisations.canton_village_autonome as loc_canton',
@@ -61,25 +65,25 @@ class EtablissementsExport implements FromQuery, WithHeadings, WithMapping, With
             ->leftJoin('equipements_etablissement', 'etablissements.id', '=', 'equipements_etablissement.etablissement_id')
             ->leftJoin('infrastructures', 'etablissements.id', '=', 'infrastructures.etablissement_id');
 
-        // Appliquer les filtres si fournis
+        // Appliquer les filtres sur les tables jointes
         if (!empty($this->filters['region'])) {
-            $query->where('etablissements.region', $this->filters['region']);
+            $query->where('localisations.region', $this->filters['region']);
         }
 
         if (!empty($this->filters['prefecture'])) {
-            $query->where('etablissements.prefecture', $this->filters['prefecture']);
+            $query->where('localisations.prefecture', $this->filters['prefecture']);
         }
 
         if (!empty($this->filters['libelle_type_milieu'])) {
-            $query->where('etablissements.libelle_type_milieu', $this->filters['libelle_type_milieu']);
+            $query->where('milieux.libelle_type_milieu', $this->filters['libelle_type_milieu']);
         }
 
         if (!empty($this->filters['libelle_type_statut_etab'])) {
-            $query->where('etablissements.libelle_type_statut_etab', $this->filters['libelle_type_statut_etab']);
+            $query->where('statuts.libelle_type_statut_etab', $this->filters['libelle_type_statut_etab']);
         }
 
         if (!empty($this->filters['libelle_type_systeme'])) {
-            $query->where('etablissements.libelle_type_systeme', $this->filters['libelle_type_systeme']);
+            $query->where('systemes.libelle_type_systeme', $this->filters['libelle_type_systeme']);
         }
 
         return $query;
@@ -135,18 +139,18 @@ class EtablissementsExport implements FromQuery, WithHeadings, WithMapping, With
     public function map($etablissement): array
     {
         return [
-            $etablissement->id_etab,
-            $etablissement->code_etab,
-            $etablissement->nom_etab,
-            $etablissement->loc_region ?? $etablissement->region ?? 'N/A',
-            $etablissement->loc_prefecture ?? $etablissement->prefecture ?? 'N/A',
-            $etablissement->loc_canton ?? $etablissement->canton_village_autonome ?? 'N/A',
-            $etablissement->loc_ville ?? $etablissement->ville_village_quartier ?? 'N/A',
-            $etablissement->loc_commune ?? $etablissement->commune_etab ?? 'N/A',
-            $etablissement->milieu_libelle ?? $etablissement->libelle_type_milieu ?? 'N/A',
-            $etablissement->statut_libelle ?? $etablissement->libelle_type_statut_etab ?? 'N/A',
-            $etablissement->systeme_libelle ?? $etablissement->libelle_type_systeme ?? 'N/A',
-            $etablissement->annee_libelle ?? $etablissement->libelle_type_annee ?? 'N/A',
+            $etablissement->id,
+            $etablissement->code_etablissement ?? 'N/A',
+            $etablissement->nom_etablissement ?? 'N/A',
+            $etablissement->loc_region ?? 'N/A',
+            $etablissement->loc_prefecture ?? 'N/A',
+            $etablissement->loc_canton ?? 'N/A',
+            $etablissement->loc_ville ?? 'N/A',
+            $etablissement->loc_commune ?? 'N/A',
+            $etablissement->milieu_libelle ?? 'N/A',
+            $etablissement->statut_libelle ?? 'N/A',
+            $etablissement->systeme_libelle ?? 'N/A',
+            $etablissement->annee_libelle ?? 'N/A',
             $etablissement->niveau_enseignement ?? 'N/A',
             $etablissement->eff_g ?? 0,
             $etablissement->eff_f ?? 0,
@@ -154,11 +158,11 @@ class EtablissementsExport implements FromQuery, WithHeadings, WithMapping, With
             $etablissement->ens_h ?? 0,
             $etablissement->ens_f ?? 0,
             $etablissement->ens_total ?? 0,
-            $etablissement->equip_elect ?? 'Non',
-            $etablissement->equip_latrine ?? 'Non',
-            $etablissement->equip_latrine_fonct ?? 'Non',
-            $etablissement->equip_acces ?? 'Non',
-            $etablissement->equip_eau ?? 'Non',
+            $etablissement->equip_elect ? 'Oui' : 'Non',
+            $etablissement->equip_latrine ? 'Oui' : 'Non',
+            $etablissement->equip_latrine_fonct ? 'Oui' : 'Non',
+            $etablissement->equip_acces ? 'Oui' : 'Non',
+            $etablissement->equip_eau ? 'Oui' : 'Non',
             $etablissement->infra_dur ?? 0,
             $etablissement->infra_banco ?? 0,
             $etablissement->infra_autre ?? 0,

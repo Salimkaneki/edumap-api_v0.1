@@ -1262,39 +1262,42 @@ class EtablissementController extends Controller
                 'etablissements.id',
                 'etablissements.code_etablissement',
                 'etablissements.nom_etablissement',
-                'etablissements.region',
-                'etablissements.prefecture',
-                'etablissements.libelle_type_milieu',
-                'etablissements.libelle_type_statut_etab',
-                'etablissements.libelle_type_systeme',
-                'etablissements.niveau_enseignement',
+                'localisations.region',
+                'localisations.prefecture',
+                'milieux.libelle_type_milieu',
+                'statuts.libelle_type_statut_etab',
+                'systemes.libelle_type_systeme',
                 'effectifs.tot as total_eleves',
                 'effectifs.total_ense as total_enseignants',
                 'equipements_etablissement.existe_elect',
                 'equipements_etablissement.eau'
             ])
+            ->leftJoin('localisations', 'etablissements.localisation_id', '=', 'localisations.id')
+            ->leftJoin('milieux', 'etablissements.milieu_id', '=', 'milieux.id')
+            ->leftJoin('statuts', 'etablissements.statut_id', '=', 'statuts.id')
+            ->leftJoin('systemes', 'etablissements.systeme_id', '=', 'systemes.id')
             ->leftJoin('effectifs', 'etablissements.id', '=', 'effectifs.etablissement_id')
             ->leftJoin('equipements_etablissement', 'etablissements.id', '=', 'equipements_etablissement.etablissement_id');
 
-        // Appliquer les filtres
+        // Appliquer les filtres sur les tables jointes
         if (!empty($filters['region'])) {
-            $query->where('etablissements.region', $filters['region']);
+            $query->where('localisations.region', $filters['region']);
         }
 
         if (!empty($filters['prefecture'])) {
-            $query->where('etablissements.prefecture', $filters['prefecture']);
+            $query->where('localisations.prefecture', $filters['prefecture']);
         }
 
         if (!empty($filters['libelle_type_milieu'])) {
-            $query->where('etablissements.libelle_type_milieu', $filters['libelle_type_milieu']);
+            $query->where('milieux.libelle_type_milieu', $filters['libelle_type_milieu']);
         }
 
         if (!empty($filters['libelle_type_statut_etab'])) {
-            $query->where('etablissements.libelle_type_statut_etab', $filters['libelle_type_statut_etab']);
+            $query->where('statuts.libelle_type_statut_etab', $filters['libelle_type_statut_etab']);
         }
 
         if (!empty($filters['libelle_type_systeme'])) {
-            $query->where('etablissements.libelle_type_systeme', $filters['libelle_type_systeme']);
+            $query->where('systemes.libelle_type_systeme', $filters['libelle_type_systeme']);
         }
 
         // Limiter le nombre de résultats pour le PDF
