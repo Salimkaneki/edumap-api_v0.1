@@ -6,7 +6,7 @@
     RewriteEngine On
 
     # Augmenter la limite de mémoire pour les exports
-    php_value memory_limit 256M
+    php_value memory_limit 512M
     php_value max_execution_time 300
 
     # Handle Authorization Header

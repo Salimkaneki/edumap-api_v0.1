@@ -1180,6 +1180,8 @@ class EtablissementController extends Controller
     // Exporter les établissements
     public function export(Request $request)
     {
+       ini_set('memory_limit', '512M'); // ou '1G' selon vos besoins
+
         try {
             $admin = $request->user();
             
