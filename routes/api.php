@@ -58,21 +58,23 @@ Route::prefix('admin')->group(function () {
         
         // Routes de gestion des établissements (admin et superadmin)
         Route::prefix('etablissements')->group(function () {
+            // IMPORTANT : Routes spécifiques AVANT les routes avec paramètres dynamiques
+            
             Route::get('/', [EtablissementController::class, 'index']);
             Route::get('/search', [EtablissementController::class, 'search']);
             Route::get('/map', [EtablissementController::class, 'map']);
             Route::get('/stats', [EtablissementController::class, 'stats']);
-            Route::get('/{id}', [EtablissementController::class, 'show']);
-            Route::post('/', [EtablissementController::class, 'store']);
-            Route::put('/{id}', [EtablissementController::class, 'update']);
-            Route::patch('/{id}', [EtablissementController::class, 'update']);
             
-            // Import/Export (admin uniquement)
+            // Import/Export (admin uniquement) - AVANT /{id}
             Route::post('/import', [EtablissementController::class, 'import']);
             Route::get('/export', [EtablissementController::class, 'export']);
-
-                        // Suppression d'établissements
-            Route::delete('/{id}', [EtablissementController::class, 'destroy']);
+            
+            // Routes avec paramètres dynamiques - TOUJOURS EN DERNIER
+            Route::get('/{id}', [EtablissementController::class, 'show'])->where('id', '[0-9]+');
+            Route::post('/', [EtablissementController::class, 'store']);
+            Route::put('/{id}', [EtablissementController::class, 'update'])->where('id', '[0-9]+');
+            Route::patch('/{id}', [EtablissementController::class, 'update'])->where('id', '[0-9]+');
+            Route::delete('/{id}', [EtablissementController::class, 'destroy'])->where('id', '[0-9]+');
         });
         
         // Routes SuperAdmin uniquement
