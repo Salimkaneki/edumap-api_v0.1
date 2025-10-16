@@ -3,14 +3,15 @@
 namespace App\Exports;
 
 use App\Models\Etablissement;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class EtablissementsExport implements FromCollection, WithHeadings, WithMapping, WithColumnWidths, WithStyles
+class EtablissementsExport implements FromQuery, WithHeadings, WithMapping, WithColumnWidths, WithStyles, WithChunkReading
 {
     protected $filters;
 
@@ -20,34 +21,76 @@ class EtablissementsExport implements FromCollection, WithHeadings, WithMapping,
     }
 
     /**
-     * Récupérer les données à exporter
+     * Récupérer la requête pour l'export (optimisé avec query au lieu de collection)
      */
-    public function collection()
+    public function query()
     {
-        $query = Etablissement::with(['localisation', 'milieu', 'statut', 'systeme', 'annee', 'effectif', 'equipement', 'infrastructure']);
+        $query = Etablissement::query()
+            ->select([
+                'etablissements.*',
+                'localisations.region as loc_region',
+                'localisations.prefecture as loc_prefecture',
+                'localisations.canton_village_autonome as loc_canton',
+                'localisations.ville_village_quartier as loc_ville',
+                'localisations.commune_etab as loc_commune',
+                'milieux.libelle_type_milieu as milieu_libelle',
+                'statuts.libelle_type_statut_etab as statut_libelle',
+                'systemes.libelle_type_systeme as systeme_libelle',
+                'annees.libelle_type_annee as annee_libelle',
+                'effectifs.sommedenb_eff_g as eff_g',
+                'effectifs.sommedenb_eff_f as eff_f',
+                'effectifs.tot as eff_tot',
+                'effectifs.sommedenb_ens_h as ens_h',
+                'effectifs.sommedenb_ens_f as ens_f',
+                'effectifs.total_ense as ens_total',
+                'equipements_etablissement.existe_elect as equip_elect',
+                'equipements_etablissement.existe_latrine as equip_latrine',
+                'equipements_etablissement.existe_latrine_fonct as equip_latrine_fonct',
+                'equipements_etablissement.acces_toute_saison as equip_acces',
+                'equipements_etablissement.eau as equip_eau',
+                'infrastructures.sommedenb_salles_classes_dur as infra_dur',
+                'infrastructures.sommedenb_salles_classes_banco as infra_banco',
+                'infrastructures.sommedenb_salles_classes_autre as infra_autre'
+            ])
+            ->leftJoin('localisations', 'etablissements.localisation_id', '=', 'localisations.id')
+            ->leftJoin('milieux', 'etablissements.milieu_id', '=', 'milieux.id')
+            ->leftJoin('statuts', 'etablissements.statut_id', '=', 'statuts.id')
+            ->leftJoin('systemes', 'etablissements.systeme_id', '=', 'systemes.id')
+            ->leftJoin('annees', 'etablissements.annee_id', '=', 'annees.id')
+            ->leftJoin('effectifs', 'etablissements.id', '=', 'effectifs.etablissement_id')
+            ->leftJoin('equipements_etablissement', 'etablissements.id', '=', 'equipements_etablissement.etablissement_id')
+            ->leftJoin('infrastructures', 'etablissements.id', '=', 'infrastructures.etablissement_id');
 
         // Appliquer les filtres si fournis
         if (!empty($this->filters['region'])) {
-            $query->where('region', $this->filters['region']);
+            $query->where('etablissements.region', $this->filters['region']);
         }
 
         if (!empty($this->filters['prefecture'])) {
-            $query->where('prefecture', $this->filters['prefecture']);
+            $query->where('etablissements.prefecture', $this->filters['prefecture']);
         }
 
         if (!empty($this->filters['libelle_type_milieu'])) {
-            $query->where('libelle_type_milieu', $this->filters['libelle_type_milieu']);
+            $query->where('etablissements.libelle_type_milieu', $this->filters['libelle_type_milieu']);
         }
 
         if (!empty($this->filters['libelle_type_statut_etab'])) {
-            $query->where('libelle_type_statut_etab', $this->filters['libelle_type_statut_etab']);
+            $query->where('etablissements.libelle_type_statut_etab', $this->filters['libelle_type_statut_etab']);
         }
 
         if (!empty($this->filters['libelle_type_systeme'])) {
-            $query->where('libelle_type_systeme', $this->filters['libelle_type_systeme']);
+            $query->where('etablissements.libelle_type_systeme', $this->filters['libelle_type_systeme']);
         }
 
-        return $query->get();
+        return $query;
+    }
+
+    /**
+     * Traiter les données par chunks pour éviter les problèmes de mémoire
+     */
+    public function chunkSize(): int
+    {
+        return 500; // Traiter 500 lignes à la fois
     }
 
     /**
@@ -56,6 +99,7 @@ class EtablissementsExport implements FromCollection, WithHeadings, WithMapping,
     public function headings(): array
     {
         return [
+            'ID Établissement',
             'Code Établissement',
             'Nom Établissement',
             'Région',
@@ -63,23 +107,22 @@ class EtablissementsExport implements FromCollection, WithHeadings, WithMapping,
             'Canton/Village Autonome',
             'Ville/Village/Quartier',
             'Commune',
-            'Latitude',
-            'Longitude',
             'Type de Milieu',
             'Statut',
             'Système',
             'Année',
-            'Électricité',
-            'Latrines',
-            'Latrines Fonctionnelles',
-            'Accès Toute Saison',
-            'Eau',
+            'Niveau Enseignement',
             'Effectif Garçons',
             'Effectif Filles',
             'Total Élèves',
             'Enseignants Hommes',
             'Enseignants Femmes',
             'Total Enseignants',
+            'Électricité',
+            'Latrines',
+            'Latrines Fonctionnelles',
+            'Accès Toute Saison',
+            'Eau',
             'Salles en Dur',
             'Salles en Banco',
             'Autres Salles',
@@ -87,38 +130,38 @@ class EtablissementsExport implements FromCollection, WithHeadings, WithMapping,
     }
 
     /**
-     * Mapper les données de chaque établissement
+     * Mapper les données de chaque établissement (optimisé sans relations)
      */
     public function map($etablissement): array
     {
         return [
-            $etablissement->code_etablissement,
-            $etablissement->nom_etablissement,
-            $etablissement->localisation->region ?? $etablissement->region ?? 'N/A',
-            $etablissement->localisation->prefecture ?? $etablissement->prefecture ?? 'N/A',
-            $etablissement->localisation->canton_village_autonome ?? $etablissement->canton_village_autonome ?? 'N/A',
-            $etablissement->localisation->ville_village_quartier ?? $etablissement->ville_village_quartier ?? 'N/A',
-            $etablissement->localisation->commune_etab ?? $etablissement->commune_etab ?? 'N/A',
-            $etablissement->latitude ?? 'N/A',
-            $etablissement->longitude ?? 'N/A',
-            $etablissement->milieu->libelle_type_milieu ?? $etablissement->libelle_type_milieu ?? 'N/A',
-            $etablissement->statut->libelle_type_statut_etab ?? $etablissement->libelle_type_statut_etab ?? 'N/A',
-            $etablissement->systeme->libelle_type_systeme ?? $etablissement->libelle_type_systeme ?? 'N/A',
-            $etablissement->annee->libelle_type_annee ?? $etablissement->libelle_type_annee ?? 'N/A',
-            $etablissement->equipement->existe_elect ?? $etablissement->existe_elect ? 'Oui' : 'Non',
-            $etablissement->equipement->existe_latrine ?? $etablissement->existe_latrine ? 'Oui' : 'Non',
-            $etablissement->equipement->existe_latrine_fonct ?? $etablissement->existe_latrine_fonct ? 'Oui' : 'Non',
-            $etablissement->equipement->acces_toute_saison ?? $etablissement->acces_toute_saison ? 'Oui' : 'Non',
-            $etablissement->equipement->eau ?? $etablissement->eau ? 'Oui' : 'Non',
-            $etablissement->effectif->sommedenb_eff_g ?? $etablissement->sommedenb_eff_g ?? 0,
-            $etablissement->effectif->sommedenb_eff_f ?? $etablissement->sommedenb_eff_f ?? 0,
-            $etablissement->effectif->tot ?? $etablissement->tot ?? 0,
-            $etablissement->effectif->sommedenb_ens_h ?? $etablissement->sommedenb_ens_h ?? 0,
-            $etablissement->effectif->sommedenb_ens_f ?? $etablissement->sommedenb_ens_f ?? 0,
-            $etablissement->effectif->total_ense ?? $etablissement->total_ense ?? 0,
-            $etablissement->infrastructure->sommedenb_salles_classes_dur ?? $etablissement->sommedenb_salles_classes_dur ?? 0,
-            $etablissement->infrastructure->sommedenb_salles_classes_banco ?? $etablissement->sommedenb_salles_classes_banco ?? 0,
-            $etablissement->infrastructure->sommedenb_salles_classes_autre ?? $etablissement->sommedenb_salles_classes_autre ?? 0,
+            $etablissement->id_etab,
+            $etablissement->code_etab,
+            $etablissement->nom_etab,
+            $etablissement->loc_region ?? $etablissement->region ?? 'N/A',
+            $etablissement->loc_prefecture ?? $etablissement->prefecture ?? 'N/A',
+            $etablissement->loc_canton ?? $etablissement->canton_village_autonome ?? 'N/A',
+            $etablissement->loc_ville ?? $etablissement->ville_village_quartier ?? 'N/A',
+            $etablissement->loc_commune ?? $etablissement->commune_etab ?? 'N/A',
+            $etablissement->milieu_libelle ?? $etablissement->libelle_type_milieu ?? 'N/A',
+            $etablissement->statut_libelle ?? $etablissement->libelle_type_statut_etab ?? 'N/A',
+            $etablissement->systeme_libelle ?? $etablissement->libelle_type_systeme ?? 'N/A',
+            $etablissement->annee_libelle ?? $etablissement->libelle_type_annee ?? 'N/A',
+            $etablissement->niveau_enseignement ?? 'N/A',
+            $etablissement->eff_g ?? 0,
+            $etablissement->eff_f ?? 0,
+            $etablissement->eff_tot ?? 0,
+            $etablissement->ens_h ?? 0,
+            $etablissement->ens_f ?? 0,
+            $etablissement->ens_total ?? 0,
+            $etablissement->equip_elect ?? 'Non',
+            $etablissement->equip_latrine ?? 'Non',
+            $etablissement->equip_latrine_fonct ?? 'Non',
+            $etablissement->equip_acces ?? 'Non',
+            $etablissement->equip_eau ?? 'Non',
+            $etablissement->infra_dur ?? 0,
+            $etablissement->infra_banco ?? 0,
+            $etablissement->infra_autre ?? 0,
         ];
     }
 
